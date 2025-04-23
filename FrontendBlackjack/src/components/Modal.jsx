@@ -1,13 +1,28 @@
-import React from "react";
+import React, { useRef, useEffect } from "react";
 
 function Modal({ title, children, onClose }) {
+  const modalRef = useRef();
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [onClose]);
+
   return (
     <div>
       <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-        <div className="bg-white rounded-2xl shadow-lg p-6 w-96 text-black relative">
+        <div ref={modalRef} className="bg-white rounded-2xl shadow-lg p-6 w-[500px] text-black relative">
           <button
             onClick={onClose}
-            className="absolute top-2 right-3 text-gray-600 hover:text-black text-xl font-bold"
+            className="absolute top-2 right-3 text-red-500 hover:text-red-700 text-xl font-bold"
           >
             &times;
           </button>
