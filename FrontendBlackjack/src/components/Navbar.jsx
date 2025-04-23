@@ -1,6 +1,17 @@
 import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faGear, faUser, faPowerOff, faUserPen, faRotateRight, faChartPie } from "@fortawesome/free-solid-svg-icons";
+import {
+  faGear,
+  faUser,
+  faPowerOff,
+  faUserPen,
+  faRotateRight,
+  faChartPie,
+  faMoon,
+  faSun,
+  faVolumeXmark,
+  faVolumeHigh
+} from "@fortawesome/free-solid-svg-icons";
 import Modal from "./Modal";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
@@ -59,19 +70,27 @@ function Navbar() {
           <div className="space-y-4">
             <div>
               <h2 className="text-lg font-semibold py-2 text-blue-400">
-              <FontAwesomeIcon icon={faUser} /> Informations personnelles
+                <FontAwesomeIcon icon={faUser} /> Informations personnelles
               </h2>
               <table className="w-full text-left border border-gray-300 rounded-lg overflow-hidden">
                 <tbody>
                   <tr className="border-b border-blue-200">
                     <td className="px-4 py-2 bg-gray-100">Nom</td>
                     <td className="px-4 py-2 bg-blue-100">Njiva</td>
-                    <td className=" bg-blue-100 text-blue-500"><button><FontAwesomeIcon icon={faUserPen} /></button></td>
+                    <td className=" bg-blue-100 text-blue-500">
+                      <button>
+                        <FontAwesomeIcon icon={faUserPen} />
+                      </button>
+                    </td>
                   </tr>
                   <tr className="border-b">
                     <td className="px-4 py-2 bg-gray-100">Email</td>
                     <td className="px-4 py-2 bg-blue-100">exemple@mail.com</td>
-                    <td className="text-blue-500 bg-blue-100"><button><FontAwesomeIcon icon={faUserPen} /></button></td>
+                    <td className="text-blue-500 bg-blue-100">
+                      <button>
+                        <FontAwesomeIcon icon={faUserPen} />
+                      </button>
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -79,10 +98,14 @@ function Navbar() {
 
             <div>
               <div className="flex justify-between py-2">
-              <h2 className="text-lg font-semibold text-blue-400"><FontAwesomeIcon icon={faChartPie}  /> Statistiques de jeu</h2>
-              <button className="text-red-500"><FontAwesomeIcon icon={faRotateRight} /> restaurer</button>
+                <h2 className="text-lg font-semibold text-blue-400">
+                  <FontAwesomeIcon icon={faChartPie} /> Statistiques de jeu
+                </h2>
+                <button className="text-red-500">
+                  <FontAwesomeIcon icon={faRotateRight} /> restaurer
+                </button>
               </div>
-              
+
               <table className="w-full text-left border border-blue-200 rounded-lg overflow-hidden">
                 <tbody>
                   <tr className="border-b border-blue-200 ">
@@ -118,7 +141,49 @@ function Navbar() {
 
       {modalType === "settings" && (
         <Modal title="Paramètres" onClose={closeModal}>
-          <p>Réglages utilisateur ici...</p>
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-medium">Thème</h3>
+              <div className="mt-2 flex items-center gap-4">
+                <button className="px-4 py-2 bg-gray-200 rounded text-blue-400 hover:bg-gray-300">
+                <FontAwesomeIcon icon={faSun}/> Clair
+                </button>
+                <button className="px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-700">
+                <FontAwesomeIcon icon={faMoon} /> Sombre
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-medium">Son</h3>
+              <div className="mt-2 flex items-center gap-4">
+                <button className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+                <FontAwesomeIcon icon={faVolumeHigh} /> Activé
+                </button>
+                <button className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
+                <FontAwesomeIcon icon={faVolumeXmark} /> Désactivé
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-medium">Notifications</h3>
+              <div className="mt-2 flex items-center gap-4">
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    className="form-checkbox"
+                    defaultChecked
+                  />
+                  <span>Recevoir les alertes de victoire</span>
+                </label>
+                <label className="flex items-center space-x-2">
+                  <input type="checkbox" className="form-checkbox" />
+                  <span>Activer les rappels de pause</span>
+                </label>
+              </div>
+            </div>
+          </div>
         </Modal>
       )}
     </>
