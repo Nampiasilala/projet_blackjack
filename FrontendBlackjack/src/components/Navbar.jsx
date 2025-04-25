@@ -10,7 +10,8 @@ import {
   faMoon,
   faSun,
   faVolumeXmark,
-  faVolumeHigh
+  faVolumeHigh,
+  faWandMagicSparkles
 } from "@fortawesome/free-solid-svg-icons";
 import Modal from "./Modal";
 import Swal from "sweetalert2";
@@ -51,7 +52,7 @@ function Navbar() {
   return (
     <>
       <div className="flex justify-between items-center p-4 bg-black text-white">
-        <h2 className="text-2xl font-bold">jeux blackjack</h2>
+        <h2 className="text-2xl font-bold"><FontAwesomeIcon icon={faWandMagicSparkles} /> jeux blackjack</h2>
         <div className="flex gap-10 text-xl cursor-pointer">
           <FontAwesomeIcon icon={faUser} onClick={() => openModal("profile")} />
           <FontAwesomeIcon
