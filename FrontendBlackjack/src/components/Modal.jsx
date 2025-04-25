@@ -22,7 +22,7 @@ function Modal({ title, children, onClose }) {
         <div ref={modalRef} className="bg-white rounded-2xl shadow-lg p-6 w-[500px] text-black relative">
           <button
             onClick={onClose}
-            className="absolute top-2 right-3 text-red-500 hover:text-red-700 text-xl font-bold"
+            className="absolute top-2 right-3 text-red-500 hover:text-red-700 text-2xl font-bold"
           >
             &times;
           </button>

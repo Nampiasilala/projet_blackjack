@@ -5,7 +5,7 @@ function DealerHand({ cards }) {
   return (
     <div>
       <div className="mb-4 text-center">
-        <h2 className="text-lg font-semibold mb-2">Joueur</h2>
+        <h2 className="text-lg font-semibold mb-2">Croupier</h2>
         <div className="flex justify-center gap-2">
           {cards.map((card, index) => (
             <Card key={index} value={card} />

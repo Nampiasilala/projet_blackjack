@@ -51,8 +51,8 @@ function Navbar() {
   return (
     <>
       <div className="flex justify-between items-center p-4 bg-black text-white">
-        <h2 className="text-2xl font-bold">Blackjack Game</h2>
-        <div className="flex gap-4 text-xl cursor-pointer">
+        <h2 className="text-2xl font-bold">jeux blackjack</h2>
+        <div className="flex gap-10 text-xl cursor-pointer">
           <FontAwesomeIcon icon={faUser} onClick={() => openModal("profile")} />
           <FontAwesomeIcon
             icon={faGear}
@@ -69,7 +69,7 @@ function Navbar() {
         <Modal title="Profil" onClose={closeModal}>
           <div className="space-y-4">
             <div>
-              <h2 className="text-lg font-semibold py-2 text-blue-400">
+              <h2 className="text-lg font-semibold py-2 text-blue-500">
                 <FontAwesomeIcon icon={faUser} /> Informations personnelles
               </h2>
               <table className="w-full text-left border border-gray-300 rounded-lg overflow-hidden">
@@ -98,7 +98,7 @@ function Navbar() {
 
             <div>
               <div className="flex justify-between py-2">
-                <h2 className="text-lg font-semibold text-blue-400">
+                <h2 className="text-lg font-semibold text-blue-500">
                   <FontAwesomeIcon icon={faChartPie} /> Statistiques de jeu
                 </h2>
                 <button className="text-red-500">
@@ -143,7 +143,7 @@ function Navbar() {
         <Modal title="Paramètres" onClose={closeModal}>
           <div className="space-y-6">
             <div>
-              <h3 className="text-lg font-medium">Thème</h3>
+              <h3 className="text-lg font-medium text-blue-500">Thème</h3>
               <div className="mt-2 flex items-center gap-4">
                 <button className="px-4 py-2 bg-gray-200 rounded text-blue-400 hover:bg-gray-300">
                 <FontAwesomeIcon icon={faSun}/> Clair
@@ -155,7 +155,7 @@ function Navbar() {
             </div>
 
             <div>
-              <h3 className="text-lg font-medium">Son</h3>
+              <h3 className="text-lg font-medium text-blue-500">Son</h3>
               <div className="mt-2 flex items-center gap-4">
                 <button className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
                 <FontAwesomeIcon icon={faVolumeHigh} /> Activé
@@ -167,7 +167,7 @@ function Navbar() {
             </div>
 
             <div>
-              <h3 className="text-lg font-medium">Notifications</h3>
+              <h3 className="text-lg font-medium text-blue-500">Notifications</h3>
               <div className="mt-2 flex items-center gap-4">
                 <label className="flex items-center space-x-2">
                   <input
