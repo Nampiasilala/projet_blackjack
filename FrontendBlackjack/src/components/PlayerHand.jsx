@@ -1,19 +1,17 @@
-import React from "react";
-import Card from './Card';
+import Card from "./Card";
 
 function PlayerHand({ cards }) {
   return (
-    <div>
-      <div className="mb-4 text-center">
-        <h2 className="text-lg font-semibold mb-2">Joueur</h2>
-        <div className="flex justify-center gap-2">
-          {cards.map((card, index) => (
-            <Card key={index} value={card} />
-          ))}
-        </div>
+    <div className="mb-4">
+      <h2 className="text-xl font-semibold mb-2 text-center">Vos Cartes</h2>
+      <div className="flex gap-2">
+        {cards.map((card, i) => (
+          <Card key={i} value={card} />
+        ))}
       </div>
     </div>
   );
 }
 
 export default PlayerHand;
+

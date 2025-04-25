@@ -1,42 +1,20 @@
-import { useEffect, useState } from "react";
-import Deck from "deck-of-cards";
+// DealerHand.jsx
 
-function DealerHand() {
-  const [deck, setDeck] = useState(null);
-  const [hand, setHand] = useState([]);
+import React from "react";
+import Card from "./Card";
 
-  useEffect(() => {
-    // Créer un nouveau deck et le mélanger
-    const newDeck = new Deck();
-    newDeck.shuffle();
-    setDeck(newDeck);
-  }, []);
-
-  const drawCard = () => {
-    if (deck && deck.remaining() > 0) {
-      const card = deck.draw(); // Tire une carte
-      setHand([...hand, card]);
-    }
-  };
-
+function DealerHand({ cards, isGameOver }) {
   return (
-    <div className="text-center mt-10">
-      <button
-        onClick={drawCard}
-        className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-      >
-        Tirer une carte
-      </button>
-
-      <div className="flex justify-center flex-wrap mt-6 gap-4">
-        {hand.map((card, index) => (
-          <div key={index} className="p-2 border rounded bg-white text-black">
-            {card.rank} de {card.suit}
-          </div>
+    <div className="mb-4">
+      <h2 className="text-xl font-semibold mb-2 text-center">Main du Croupier</h2>
+      <div className="flex gap-2">
+        {cards.map((card, i) => (
+          <Card key={i} value={card} hidden={i !== 0 && !isGameOver} />
         ))}
       </div>
     </div>
   );
 }
 
+// Assure-toi que tu fais l'export par défaut
 export default DealerHand;

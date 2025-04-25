@@ -1,11 +1,18 @@
-import React from "react";
+// components/Card.jsx
+function Card({ value, hidden = false }) {
+  const isRed = value.includes("♥") || value.includes("♦");
 
-function Card({ value }) {
   return (
-    <div>
-      <div className="w-16 h-24 bg-slate-700 border-2 border-black rounded-lg shadow-md flex items-center justify-center text-xl font-bold">
-        {value}
-      </div>
+    <div
+      className={`w-14 h-20 rounded shadow-md flex items-center justify-center text-xl font-semibold ${
+        hidden
+          ? "bg-gray-800 text-gray-800" // pour cacher la valeur
+          : isRed
+          ? "bg-red-100 text-red-700"
+          : "bg-white text-black"
+      }`}
+    >
+      {hidden ? "?" : value}
     </div>
   );
 }

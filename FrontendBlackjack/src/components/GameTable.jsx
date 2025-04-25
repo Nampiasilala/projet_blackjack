@@ -16,7 +16,8 @@ function GameTable({
     <div className="bg-green-800 min-h-screen flex flex-col items-center justify-center text-white p-4">
       <h1 className="text-3xl font-bold mb-6">Blackjack</h1>
 
-      <DealerHand cards={dealerCards} />
+      
+      <DealerHand cards={dealerCards} isGameOver={isGameOver} />
       <PlayerHand cards={playerCards} />
 
       <p className="text-lg mt-4">{message}</p>
