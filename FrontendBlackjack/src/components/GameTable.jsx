@@ -13,21 +13,28 @@ function GameTable({
   message,
 }) {
   return (
-    <div className="bg-green-800 min-h-screen flex flex-col items-center justify-center text-white p-4">
-      <h1 className="text-3xl font-bold mb-6">Blackjack</h1>
+    <div className="m-0 relative h-screen flex flex-col items-center justify-center text-white p-4 border border-t-white">
+      <video
+        autoPlay
+        loop
+        muted
+        className="absolute top-0 left-0 w-full h-full object-cover z-0"
+      >
+        <source src="/videos/background2.mp4" type="video/mp4" />
+      </video>
+      <div className="relative z-10 flex flex-col items-center justify-center  h-full text-white text-center bg-opacity-60">
+        <DealerHand cards={dealerCards} isGameOver={isGameOver} />
+        <PlayerHand cards={playerCards} />
 
-      
-      <DealerHand cards={dealerCards} isGameOver={isGameOver} />
-      <PlayerHand cards={playerCards} />
+        <p className="text-lg mt-4">{message}</p>
 
-      <p className="text-lg mt-4">{message}</p>
-
-      <Controls
-        onHit={onHit}
-        onStand={onStand}
-        onRestart={onRestart}
-        isGameOver={isGameOver}
-      />
+        <Controls
+          onHit={onHit}
+          onStand={onStand}
+          onRestart={onRestart}
+          isGameOver={isGameOver}
+        />
+      </div>
     </div>
   );
 }
