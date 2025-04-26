@@ -51,18 +51,15 @@ function Navbar() {
 
   return (
     <>
-      <div className="flex justify-between items-center p-2  bg-slate-800 shadow-2xl text-white border border-white">
-        <h2 className="text-xl font-bold"><FontAwesomeIcon icon={faWandMagicSparkles} /> jeux blackjack</h2>
-        <div className="flex gap-10 text-xl cursor-pointer">
-          <FontAwesomeIcon icon={faUser} onClick={() => openModal("profile")} />
-          <FontAwesomeIcon
-            icon={faGear}
-            onClick={() => openModal("settings")}
-          />
-          <FontAwesomeIcon
-            icon={faPowerOff}
-            onClick={() => openModal("logout")}
-          />
+      <div className="flex justify-between items-center p-3 bg-gradient-to-r from-slate-800 to-slate-900 backdrop-blur-md shadow-md text-white border-b border-white/20">
+        <h2 className="text-xl font-bold font-serif tracking-wide">
+          <FontAwesomeIcon icon={faWandMagicSparkles} className="mr-2 text-yellow-400" />
+          Jeux Blackjack
+        </h2>
+        <div className="flex gap-8 text-xl cursor-pointer">
+          <FontAwesomeIcon icon={faUser} className="hover:text-blue-400 transition" onClick={() => openModal("profile")} />
+          <FontAwesomeIcon icon={faGear} className="hover:text-blue-400 transition" onClick={() => openModal("settings")} />
+          <FontAwesomeIcon icon={faPowerOff} className="hover:text-red-400 transition" onClick={() => openModal("logout")} />
         </div>
       </div>
 
@@ -73,24 +70,20 @@ function Navbar() {
               <h2 className="text-lg font-semibold py-2 text-blue-500">
                 <FontAwesomeIcon icon={faUser} /> Informations personnelles
               </h2>
-              <table className="w-full text-left border border-gray-300 rounded-lg overflow-hidden">
+              <table className="w-full text-left border border-gray-300 rounded-lg shadow-sm overflow-hidden">
                 <tbody>
-                  <tr className="border-b border-blue-200">
-                    <td className="px-4 py-2 bg-gray-100">Nom</td>
-                    <td className="px-4 py-2 bg-blue-100">Njiva</td>
-                    <td className=" bg-blue-100 text-blue-500">
-                      <button>
-                        <FontAwesomeIcon icon={faUserPen} />
-                      </button>
+                  <tr className="border-b border-gray-200">
+                    <td className="px-4 py-2 bg-gray-100 font-medium">Nom</td>
+                    <td className="px-4 py-2 bg-gray-50">Njiva</td>
+                    <td className="px-2 py-2 bg-gray-50 text-blue-600 hover:text-blue-800">
+                      <button><FontAwesomeIcon icon={faUserPen} /></button>
                     </td>
                   </tr>
-                  <tr className="border-b">
-                    <td className="px-4 py-2 bg-gray-100">Email</td>
-                    <td className="px-4 py-2 bg-blue-100">exemple@mail.com</td>
-                    <td className="text-blue-500 bg-blue-100">
-                      <button>
-                        <FontAwesomeIcon icon={faUserPen} />
-                      </button>
+                  <tr className="border-b border-gray-200">
+                    <td className="px-4 py-2 bg-gray-100 font-medium">Email</td>
+                    <td className="px-4 py-2 bg-gray-50">exemple@mail.com</td>
+                    <td className="px-2 py-2 bg-gray-50 text-blue-600 hover:text-blue-800">
+                      <button><FontAwesomeIcon icon={faUserPen} /></button>
                     </td>
                   </tr>
                 </tbody>
@@ -102,36 +95,32 @@ function Navbar() {
                 <h2 className="text-lg font-semibold text-blue-500">
                   <FontAwesomeIcon icon={faChartPie} /> Statistiques de jeu
                 </h2>
-                <button className="text-red-500">
+                <button className="text-red-500 hover:underline">
                   <FontAwesomeIcon icon={faRotateRight} /> restaurer
                 </button>
               </div>
 
-              <table className="w-full text-left border border-blue-200 rounded-lg overflow-hidden">
+              <table className="w-full text-left border border-blue-200 rounded-lg shadow-sm overflow-hidden">
                 <tbody>
                   <tr className="border-b border-blue-200 ">
-                    <td className="px-4 py-2 bg-gray-100">Parties jouées</td>
-                    <td className="px-4 py-2 bg-blue-100">42</td>
+                    <td className="px-4 py-2 bg-gray-100 font-medium">Parties jouées</td>
+                    <td className="px-4 py-2 bg-white">42</td>
                   </tr>
                   <tr className="border-b border-blue-200">
-                    <td className="px-4 py-2 bg-gray-100">Parties gagnées</td>
-                    <td className="px-4 py-2 bg-blue-100">18</td>
+                    <td className="px-4 py-2 bg-gray-100 font-medium">Parties gagnées</td>
+                    <td className="px-4 py-2 bg-white">18</td>
                   </tr>
                   <tr className="border-b border-blue-200">
-                    <td className="px-4 py-2 bg-gray-100">Parties perdues</td>
-                    <td className="px-4 py-2 bg-blue-100">24</td>
+                    <td className="px-4 py-2 bg-gray-100 font-medium">Parties perdues</td>
+                    <td className="px-4 py-2 bg-white">24</td>
                   </tr>
                   <tr className="border-b border-blue-200">
-                    <td className="px-4 py-2 bg-gray-100">
-                      Total de jetons gagnés
-                    </td>
-                    <td className="px-4 py-2 bg-blue-100">1500</td>
+                    <td className="px-4 py-2 bg-gray-100 font-medium">Total de jetons gagnés</td>
+                    <td className="px-4 py-2 bg-white">1500</td>
                   </tr>
                   <tr>
-                    <td className="px-4 py-2 bg-gray-100">
-                      Meilleure série de victoires
-                    </td>
-                    <td className="px-4 py-2 bg-blue-100">4</td>
+                    <td className="px-4 py-2 bg-gray-100 font-medium">Meilleure série de victoires</td>
+                    <td className="px-4 py-2 bg-white">4</td>
                   </tr>
                 </tbody>
               </table>
@@ -146,11 +135,11 @@ function Navbar() {
             <div>
               <h3 className="text-lg font-medium text-blue-500">Thème</h3>
               <div className="mt-2 flex items-center gap-4">
-                <button className="px-4 py-2 bg-gray-200 rounded text-blue-400 hover:bg-gray-300">
-                <FontAwesomeIcon icon={faSun}/> Clair
+                <button className="px-4 py-2 bg-gray-200 rounded text-blue-600 hover:bg-gray-300 transition">
+                  <FontAwesomeIcon icon={faSun}/> Clair
                 </button>
-                <button className="px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-700">
-                <FontAwesomeIcon icon={faMoon} /> Sombre
+                <button className="px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-700 transition">
+                  <FontAwesomeIcon icon={faMoon} /> Sombre
                 </button>
               </div>
             </div>
@@ -158,28 +147,24 @@ function Navbar() {
             <div>
               <h3 className="text-lg font-medium text-blue-500">Son</h3>
               <div className="mt-2 flex items-center gap-4">
-                <button className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
-                <FontAwesomeIcon icon={faVolumeHigh} /> Activé
+                <button className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition">
+                  <FontAwesomeIcon icon={faVolumeHigh} /> Activé
                 </button>
-                <button className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
-                <FontAwesomeIcon icon={faVolumeXmark} /> Désactivé
+                <button className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition">
+                  <FontAwesomeIcon icon={faVolumeXmark} /> Désactivé
                 </button>
               </div>
             </div>
 
             <div>
               <h3 className="text-lg font-medium text-blue-500">Notifications</h3>
-              <div className="mt-2 flex items-center gap-4">
+              <div className="mt-2 flex flex-col gap-2">
                 <label className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    className="form-checkbox"
-                    defaultChecked
-                  />
+                  <input type="checkbox" className="form-checkbox text-blue-500" defaultChecked />
                   <span>Recevoir les alertes de victoire</span>
                 </label>
                 <label className="flex items-center space-x-2">
-                  <input type="checkbox" className="form-checkbox" />
+                  <input type="checkbox" className="form-checkbox text-blue-500" />
                   <span>Activer les rappels de pause</span>
                 </label>
               </div>
