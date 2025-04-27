@@ -10,8 +10,10 @@ public class StatistiquesJeu {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "utilisateur_id", nullable = false)
-    private Long utilisateurId;
+    // Remplacer l'ancien utilisateurId par une vraie relation ManyToOne
+    @ManyToOne
+    @JoinColumn(name = "utilisateur_id", nullable = false)
+    private Utilisateur utilisateur;
 
     @Column(name = "parties_jouees")
     private int partiesJouees;
@@ -38,12 +40,12 @@ public class StatistiquesJeu {
         this.id = id;
     }
 
-    public Long getUtilisateurId() {
-        return utilisateurId;
+    public Utilisateur getUtilisateur() {
+        return utilisateur;
     }
 
-    public void setUtilisateurId(Long utilisateurId) {
-        this.utilisateurId = utilisateurId;
+    public void setUtilisateur(Utilisateur utilisateur) {
+        this.utilisateur = utilisateur;
     }
 
     public int getPartiesJouees() {

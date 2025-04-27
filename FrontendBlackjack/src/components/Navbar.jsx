@@ -22,17 +22,30 @@ function Navbar() {
   const [modalType, setModalType] = useState(null);
   const navigate = useNavigate();
 
-  const [stats, setStats] = useState(null);
+  const [userData, setUserData] = useState(null); // Données de l'utilisateur (nom, email)
+  const [stats, setStats] = useState(null); // Données des statistiques de jeu
 
+  // Récupérer les données utilisateur (nom, email)
   useEffect(() => {
-    // récupère les stats de l'utilisateur 1
+    axios
+      .get("http://localhost:8080/api/utilisateurs/1")
+      .then((response) => {
+        setUserData(response.data);
+      })
+      .catch((error) => {
+        console.error("Erreur de récupération des données utilisateur :", error);
+      });
+  }, []);
+
+  // Récupérer les statistiques de jeu
+  useEffect(() => {
     axios
       .get("http://localhost:8080/api/statistiques/1")
       .then((response) => {
         setStats(response.data);
       })
       .catch((error) => {
-        console.error("Erreur de récupération :", error);
+        console.error("Erreur de récupération des statistiques de jeu :", error);
       });
   }, []);
 
@@ -104,7 +117,9 @@ function Navbar() {
                 <tbody>
                   <tr className="border-b border-gray-200">
                     <td className="px-4 py-2 bg-gray-100 font-medium">Nom</td>
-                    <td className="px-4 py-2 bg-gray-50">Njiva</td>
+                    <td className="px-4 py-2 bg-gray-50">
+                      {userData?.nom ?? "Nom non disponible"}
+                    </td>
                     <td className="px-2 py-2 bg-gray-50 text-blue-600 hover:text-blue-800">
                       <button>
                         <FontAwesomeIcon icon={faUserPen} />
@@ -113,7 +128,9 @@ function Navbar() {
                   </tr>
                   <tr className="border-b border-gray-200">
                     <td className="px-4 py-2 bg-gray-100 font-medium">Email</td>
-                    <td className="px-4 py-2 bg-gray-50">exemple@mail.com</td>
+                    <td className="px-4 py-2 bg-gray-50">
+                      {userData?.email ?? "Email non disponible"}
+                    </td>
                     <td className="px-2 py-2 bg-gray-50 text-blue-600 hover:text-blue-800">
                       <button>
                         <FontAwesomeIcon icon={faUserPen} />
@@ -140,31 +157,41 @@ function Navbar() {
                     <td className="px-4 py-2 bg-gray-100 font-medium">
                       Parties jouées
                     </td>
-                    <td className="px-4 py-2 bg-white">{stats?.partiesJouees ?? "-"}</td>
+                    <td className="px-4 py-2 bg-white">
+                      {stats?.partiesJouees ?? "-"}
+                    </td>
                   </tr>
                   <tr className="border-b border-blue-200">
                     <td className="px-4 py-2 bg-gray-100 font-medium">
                       Parties gagnées
                     </td>
-                    <td className="px-4 py-2 bg-white">{stats?.partiesGagnees ?? "-"}</td>
+                    <td className="px-4 py-2 bg-white">
+                      {stats?.partiesGagnees ?? "-"}
+                    </td>
                   </tr>
                   <tr className="border-b border-blue-200">
                     <td className="px-4 py-2 bg-gray-100 font-medium">
                       Parties perdues
                     </td>
-                    <td className="px-4 py-2 bg-white">{stats?.partiesPerdues ?? "-"}</td>
+                    <td className="px-4 py-2 bg-white">
+                      {stats?.partiesPerdues ?? "-"}
+                    </td>
                   </tr>
                   <tr className="border-b border-blue-200">
                     <td className="px-4 py-2 bg-gray-100 font-medium">
                       Total de jetons gagnés
                     </td>
-                    <td className="px-4 py-2 bg-white">{stats?.jetonsGagnes ?? "-"}</td>
+                    <td className="px-4 py-2 bg-white">
+                      {stats?.jetonsGagnes ?? "-"}
+                    </td>
                   </tr>
                   <tr>
                     <td className="px-4 py-2 bg-gray-100 font-medium">
                       Meilleure série de victoires
                     </td>
-                    <td className="px-4 py-2 bg-white">{stats?.meilleureSerieVictoires ?? "-"}</td>
+                    <td className="px-4 py-2 bg-white">
+                      {stats?.meilleureSerieVictoires ?? "-"}
+                    </td>
                   </tr>
                 </tbody>
               </table>
