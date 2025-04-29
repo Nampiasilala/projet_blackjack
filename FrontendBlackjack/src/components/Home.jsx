@@ -4,12 +4,11 @@ function Home() {
   const navigate = useNavigate();
 
   const handlePlay = () => {
-    navigate("/login"); // <-- maintenant aller vers /login
+    navigate("/login");
   };
 
   return (
     <div className="relative h-screen overflow-hidden">
-      {/* Vidéo de fond */}
       <video
         autoPlay
         loop
@@ -19,7 +18,6 @@ function Home() {
         <source src="/videos/background.mp4" type="video/mp4" />
       </video>
 
-      {/* Contenu au-dessus de la vidéo */}
       <div className="relative z-10 flex flex-col items-center justify-center h-full text-white text-center bg-opacity-60 space-y-4">
         <h1 className="text-4xl font-bold mb-4">Bienvenue au Blackjack !</h1>
         <p className="mb-6 text-lg">Êtes-vous prêt à jouer ?</p>

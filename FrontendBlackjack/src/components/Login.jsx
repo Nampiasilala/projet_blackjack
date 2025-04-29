@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 function Login() {
   const navigate = useNavigate();
@@ -8,6 +9,8 @@ function Login() {
     password: "",
   });
 
+  const [error, setError] = useState("");
+
   const handleChange = (e) => {
     setCredentials({
       ...credentials,
@@ -15,29 +18,44 @@ function Login() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Connexion avec :", credentials);
+    setError(""); // réinitialiser les erreurs
 
-    // TODO: vérifier la connexion ici
-    navigate("/MainPage"); // Après connexion réussie
+    try {
+      const response = await axios.post("http://localhost:8080/api/auth/login", credentials, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      // Tu peux aussi stocker le token ici si nécessaire
+      // localStorage.setItem("token", response.data.token);
+
+      // Redirection après succès
+      if (response.status === 200) {
+        navigate("/MainPage");
+      }
+    } catch (err) {
+      if (err.response && err.response.status === 401) {
+        setError("Email ou mot de passe incorrect");
+      } else {
+        setError("Erreur serveur, réessayez plus tard.");
+      }
+    }
   };
 
   return (
     <div className="relative h-screen flex items-center justify-center bg-black text-white">
-      {/* Vidéo de fond */}
-      <video
-        autoPlay
-        loop
-        muted
-        className="absolute top-0 left-0 w-full h-full object-cover z-0"
-      >
+      <video autoPlay loop muted className="absolute top-0 left-0 w-full h-full object-cover z-0">
         <source src="/videos/background.mp4" type="video/mp4" />
       </video>
 
-      {/* Formulaire connexion */}
       <div className="relative z-10 bg-black bg-opacity-70 p-8 rounded-2xl shadow-lg w-96">
         <h2 className="text-3xl font-bold mb-6 text-center">Connexion</h2>
+
+        {error && <p className="text-red-400 text-sm mb-4 text-center">{error}</p>}
+
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label className="block text-left text-sm mb-1">Email</label>
@@ -75,10 +93,7 @@ function Login() {
 
         <p className="mt-4 text-center text-sm">
           Pas encore de compte ?{" "}
-          <button
-            onClick={() => navigate("/register")}
-            className="text-green-400 hover:underline"
-          >
+          <button onClick={() => navigate("/register")} className="text-green-400 hover:underline">
             Créer un compte
           </button>
         </p>

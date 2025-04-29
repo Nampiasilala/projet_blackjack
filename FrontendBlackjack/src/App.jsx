@@ -4,7 +4,7 @@ import Home from "./components/Home";
 import Register from "./components/Register";
 import Login from "./components/Login";
 
-export default function App() {
+function App() {
   return (
     <Router>
       <Routes>
@@ -16,3 +16,5 @@ export default function App() {
     </Router>
   );
 }
+
+export default App;
