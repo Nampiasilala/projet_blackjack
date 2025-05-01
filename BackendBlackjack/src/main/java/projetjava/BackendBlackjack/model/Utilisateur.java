@@ -10,16 +10,14 @@ public class Utilisateur {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
     private String nom;
 
-    @Column(nullable = false, unique = true)
+    @Column(unique = true)
     private String email;
 
-    @Column(nullable = false)
-    private String passwordHash;  // <— champ pour stocker le mot de passe haché
+    private String passwordHash;
 
-    // ----- Getters -----
+    // --- Getters ---
     public Long getId() {
         return id;
     }
@@ -36,7 +34,7 @@ public class Utilisateur {
         return passwordHash;
     }
 
-    // ----- Setters -----
+    // --- Setters ---
     public void setId(Long id) {
         this.id = id;
     }

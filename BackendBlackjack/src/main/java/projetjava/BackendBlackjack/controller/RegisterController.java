@@ -4,15 +4,15 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import projetjava.BackendBlackjack.dto.RegistrationRequest;
-import projetjava.BackendBlackjack.service.RegistrationService;
+import projetjava.BackendBlackjack.service.CustomUserDetailsService;
 
 @RestController
 @RequestMapping("/api/auth")
 public class RegisterController {
 
-    private final RegistrationService regService;
+    private final CustomUserDetailsService regService;
 
-    public RegisterController(RegistrationService regService) {
+    public RegisterController(CustomUserDetailsService regService) {
         this.regService = regService;
     }
 

@@ -1,20 +1,13 @@
 package projetjava.BackendBlackjack.controller;
+import org.springframework.security.core.AuthenticationException;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
+import org.springframework.http.*;
+import org.springframework.security.authentication.*;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import projetjava.BackendBlackjack.dto.LoginRequest;
-import projetjava.BackendBlackjack.dto.JwtResponse;
-import projetjava.BackendBlackjack.service.JwtService;
+import org.springframework.web.bind.annotation.*;
+import projetjava.BackendBlackjack.dto.*;
+import projetjava.BackendBlackjack.service.*;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -24,22 +17,22 @@ public class AuthController {
     private AuthenticationManager authenticationManager;
 
     @Autowired
+    private CustomUserDetailsService userDetailsService;
+
+    @Autowired
     private JwtService jwtService;
 
     @PostMapping("/login")
-    public ResponseEntity<?> authenticate(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         try {
-            Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                    loginRequest.getEmail(),
-                    loginRequest.getPassword()
-                )
+            authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
             );
 
-            UserDetails user = (UserDetails) authentication.getPrincipal();
-            String jwt = jwtService.generateToken(user);
+            UserDetails user = userDetailsService.loadUserByUsername(request.getEmail());
+            String token = jwtService.generateToken(user);
 
-            return ResponseEntity.ok(new JwtResponse(jwt));
+            return ResponseEntity.ok(new JwtResponse(token));
         } catch (AuthenticationException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Identifiants invalides");
         }
