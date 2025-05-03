@@ -1,31 +1,30 @@
 package projetjava.BackendBlackjack.dto;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Email;
 
-public class LoginRequest {
-
+public class AuthRequest {
     @NotBlank
     @Email
     private String email;
-
+    
     @NotBlank
     private String password;
 
-    // --- Getters ---
+    // Getters et Setters
     public String getEmail() {
         return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getPassword() {
         return password;
     }
 
-    // --- Setters ---
-    public void setEmail(String email) {
-        this.email = email;
-    }
-   public void setPassword(String password) {
+    public void setPassword(String password) {
         this.password = password;
     }
 }

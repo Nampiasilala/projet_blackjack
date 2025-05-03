@@ -1,24 +1,33 @@
 package projetjava.BackendBlackjack.controller;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
+import projetjava.BackendBlackjack.dto.UserCreationDTO;
 import projetjava.BackendBlackjack.model.Utilisateur;
 import projetjava.BackendBlackjack.service.UtilisateurService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/utilisateurs")
 public class UtilisateurController {
 
-    @Autowired
-    private UtilisateurService utilisateurService;
+    private final UtilisateurService utilisateurService;
+
+    public UtilisateurController(UtilisateurService utilisateurService) {
+        this.utilisateurService = utilisateurService;
+    }
 
     @PostMapping
-    public Utilisateur creerUtilisateur(@RequestBody Utilisateur utilisateur) {
-        return utilisateurService.ajouterUtilisateur(utilisateur);
+    public ResponseEntity<Utilisateur> creerUtilisateur(
+            @Valid @RequestBody UserCreationDTO userDTO) {
+        Utilisateur nouvelUtilisateur = utilisateurService.ajouterUtilisateur(userDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(nouvelUtilisateur);
     }
 
     @GetMapping("/{id}")
-    public Utilisateur getUtilisateurById(@PathVariable Long id) {
-        return utilisateurService.getUtilisateurById(id);
+    public ResponseEntity<Utilisateur> getUtilisateurById(@PathVariable Long id) {
+        Utilisateur utilisateur = utilisateurService.getUtilisateurById(id);
+        return ResponseEntity.ok(utilisateur);
     }
 }

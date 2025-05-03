@@ -1,40 +1,24 @@
 package projetjava.BackendBlackjack.controller;
-import org.springframework.security.core.AuthenticationException;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.*;
-import org.springframework.security.authentication.*;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import projetjava.BackendBlackjack.dto.*;
-import projetjava.BackendBlackjack.service.*;
+import projetjava.BackendBlackjack.dto.AuthRequest;
+import projetjava.BackendBlackjack.dto.AuthResponse;
+import projetjava.BackendBlackjack.service.AuthService;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    @Autowired
-    private AuthenticationManager authenticationManager;
+    private final AuthService authService;
 
-    @Autowired
-    private CustomUserDetailsService userDetailsService;
-
-    @Autowired
-    private JwtService jwtService;
+    public AuthController(AuthService authService) {
+        this.authService = authService;
+    }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
-        try {
-            authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
-            );
-
-            UserDetails user = userDetailsService.loadUserByUsername(request.getEmail());
-            String token = jwtService.generateToken(user);
-
-            return ResponseEntity.ok(new JwtResponse(token));
-        } catch (AuthenticationException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Identifiants invalides");
-        }
+    public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest request) {
+        AuthResponse response = authService.authenticate(request);
+        return ResponseEntity.ok(response);
     }
 }
