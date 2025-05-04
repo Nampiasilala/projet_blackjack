@@ -6,6 +6,8 @@ import projetjava.BackendBlackjack.dto.AuthRequest;
 import projetjava.BackendBlackjack.dto.AuthResponse;
 import projetjava.BackendBlackjack.service.AuthService;
 
+@CrossOrigin(origins = "http://localhost:5173")
+
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {

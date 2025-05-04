@@ -34,8 +34,12 @@ function Login() {
 
       // Redirection après succès
       if (response.status === 200) {
+        localStorage.setItem("token", response.data.token);
+        localStorage.setItem("userId", response.data.userId);
+        localStorage.setItem("email", response.data.email);
         navigate("/MainPage");
       }
+      
     } catch (err) {
       if (err.response && err.response.status === 401) {
         setError("Email ou mot de passe incorrect");
