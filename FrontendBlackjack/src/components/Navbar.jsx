@@ -27,8 +27,17 @@ function Navbar() {
 
   // Récupérer les données utilisateur (nom, email)
   useEffect(() => {
+    const userId = localStorage.getItem("userId");
+    const token = localStorage.getItem("token");
+
+    if (!userId || !token) return;
+
     axios
-      .get("http://localhost:8080/api/utilisateurs/1")
+      .get(`http://localhost:8080/api/utilisateurs/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
       .then((response) => {
         setUserData(response.data);
       })
@@ -40,21 +49,33 @@ function Navbar() {
       });
   }, []);
 
-  // Récupérer les statistiques de jeu
   useEffect(() => {
-    axios
-      .get("http://localhost:8080/api/statistiques/1")
-      .then((response) => {
-        setStats(response.data);
-      })
-      .catch((error) => {
-        console.error(
-          "Erreur de récupération des statistiques de jeu :",
-          error
-        );
-      });
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/");
+    }
   }, []);
 
+
+  useEffect(() => {
+    const userId = localStorage.getItem("userId");
+    const token = localStorage.getItem("token");
+  
+    if (!userId || !token) return;
+  
+    axios.get(`http://localhost:8080/api/statistiques/${userId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+    .then((response) => {
+      setStats(response.data);
+    })
+    .catch((error) => {
+      console.error("Erreur de récupération des statistiques de jeu :", error);
+    });
+  }, []);
+  
   const handleLogoutConfirm = () => {
     Swal.fire({
       title: "Déconnexion",
