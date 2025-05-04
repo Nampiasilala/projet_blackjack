@@ -10,7 +10,7 @@ function MainPage() {
     message,
     onHit,
     onStand,
-    onRestart
+    onRestart,
   } = useBlackjack();
 
   return (

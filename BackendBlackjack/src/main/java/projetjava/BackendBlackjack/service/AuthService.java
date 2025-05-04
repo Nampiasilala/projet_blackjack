@@ -1,8 +1,9 @@
 package projetjava.BackendBlackjack.service;
 
 import org.mindrot.jbcrypt.BCrypt;
-import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import projetjava.BackendBlackjack.dto.AuthRequest;
 import projetjava.BackendBlackjack.dto.AuthResponse;
 import projetjava.BackendBlackjack.model.Utilisateur;
@@ -22,16 +23,22 @@ public class AuthService {
 
     public AuthResponse authenticate(AuthRequest request) {
         Utilisateur utilisateur = utilisateurRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new BadCredentialsException("Identifiants invalides"));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.UNAUTHORIZED,
+                        "Email ou mot de passe incorrect"
+                ));
 
         if (!BCrypt.checkpw(request.getPassword(), utilisateur.getPasswordHash())) {
-            throw new BadCredentialsException("Identifiants invalides");
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED,
+                    "Email ou mot de passe incorrect"
+            );
         }
 
         return new AuthResponse(
-            jwtUtil.generateToken(utilisateur),
-            utilisateur.getId(),
-            utilisateur.getEmail()
+                jwtUtil.generateToken(utilisateur),
+                utilisateur.getId(),
+                utilisateur.getEmail()
         );
     }
 }

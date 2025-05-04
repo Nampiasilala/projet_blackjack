@@ -33,7 +33,10 @@ function Navbar() {
         setUserData(response.data);
       })
       .catch((error) => {
-        console.error("Erreur de récupération des données utilisateur :", error);
+        console.error(
+          "Erreur de récupération des données utilisateur :",
+          error
+        );
       });
   }, []);
 
@@ -45,24 +48,45 @@ function Navbar() {
         setStats(response.data);
       })
       .catch((error) => {
-        console.error("Erreur de récupération des statistiques de jeu :", error);
+        console.error(
+          "Erreur de récupération des statistiques de jeu :",
+          error
+        );
       });
   }, []);
 
   const handleLogoutConfirm = () => {
     Swal.fire({
-      title: "Êtes-vous sûr de vouloir quitter ?",
-      text: "Vous allez être redirigé vers l'accueil.",
-      icon: "warning",
+      title: "Déconnexion",
+      text: "Souhaitez-vous vraiment vous déconnecter ?",
+      icon: "question",
       showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "Oui, quitter",
+      confirmButtonColor: "#e74c3c",
+      cancelButtonColor: "#3498db",
+      confirmButtonText: "Oui, déconnecter",
       cancelButtonText: "Annuler",
+      background: "#1e293b", // bleu nuit
+      color: "#f8fafc", // texte clair
+      customClass: {
+        popup: "rounded-xl shadow-lg",
+        confirmButton:
+          "px-4 py-2 text-white bg-red-600 hover:bg-red-700 rounded",
+        cancelButton:
+          "px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded",
+      },
     }).then((result) => {
       if (result.isConfirmed) {
-        console.log("Utilisateur déconnecté");
+        localStorage.removeItem("token");
         navigate("/");
+        Swal.fire({
+          title: "Déconnecté",
+          text: "Vous avez été déconnecté avec succès.",
+          icon: "success",
+          timer: 2000,
+          showConfirmButton: false,
+          background: "#1e293b",
+          color: "#f8fafc",
+        });
       }
     });
   };
