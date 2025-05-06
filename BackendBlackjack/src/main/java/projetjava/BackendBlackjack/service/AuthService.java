@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import projetjava.BackendBlackjack.dto.AuthRequest;
 import projetjava.BackendBlackjack.dto.AuthResponse;
-import projetjava.BackendBlackjack.model.Utilisateur;
+import projetjava.BackendBlackjack.model.Utilisateurs;
 import projetjava.BackendBlackjack.repository.UtilisateurRepository;
 import projetjava.BackendBlackjack.security.JwtUtil;
 
@@ -22,7 +22,7 @@ public class AuthService {
     }
 
     public AuthResponse authenticate(AuthRequest request) {
-        Utilisateur utilisateur = utilisateurRepository.findByEmail(request.getEmail())
+        Utilisateurs utilisateur = utilisateurRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.UNAUTHORIZED,
                         "Email ou mot de passe incorrect"

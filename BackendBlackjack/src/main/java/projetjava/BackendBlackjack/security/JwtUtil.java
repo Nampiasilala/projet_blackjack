@@ -3,7 +3,7 @@ package projetjava.BackendBlackjack.security;
 import io.jsonwebtoken.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import projetjava.BackendBlackjack.model.Utilisateur;
+import projetjava.BackendBlackjack.model.Utilisateurs;
 
 import java.util.Date;
 
@@ -16,7 +16,7 @@ public class JwtUtil {
     @Value("${jwt.expiration}")
     private long expirationMs;
 
-    public String generateToken(Utilisateur utilisateur) {
+    public String generateToken(Utilisateurs utilisateur) {
         return Jwts.builder()
                 .setSubject(utilisateur.getEmail())
                 .setIssuedAt(new Date())

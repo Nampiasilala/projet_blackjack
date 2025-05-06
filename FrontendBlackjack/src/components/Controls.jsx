@@ -13,7 +13,10 @@ function Controls({ onHit, onStand, onRestart, isGameOver }) {
               Piocher
             </button>
             <button
-              onClick={onStand}
+              onClick={() => {
+                // Appelle la fonction de "stand" passée par le parent
+                onStand(); 
+              }}
               className="px-4 py-2 bg-yellow-500 text-white rounded-xl shadow hover:bg-yellow-600"
             >
               Rester

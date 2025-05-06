@@ -13,7 +13,7 @@ public class StatistiquesJeu {
     // Remplacer l'ancien utilisateurId par une vraie relation ManyToOne
     @ManyToOne
     @JoinColumn(name = "utilisateur_id", nullable = false)
-    private Utilisateur utilisateur;
+    private Utilisateurs utilisateur;
 
     @Column(name = "parties_jouees")
     private int partiesJouees;
@@ -40,11 +40,11 @@ public class StatistiquesJeu {
         this.id = id;
     }
 
-    public Utilisateur getUtilisateur() {
+    public Utilisateurs getUtilisateur() {
         return utilisateur;
     }
 
-    public void setUtilisateur(Utilisateur utilisateur) {
+    public void setUtilisateur(Utilisateurs utilisateur) {
         this.utilisateur = utilisateur;
     }
 

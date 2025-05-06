@@ -5,29 +5,30 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import projetjava.BackendBlackjack.dto.UserCreationDTO;
-import projetjava.BackendBlackjack.model.Utilisateur;
-import projetjava.BackendBlackjack.service.UtilisateurService;
+import projetjava.BackendBlackjack.model.Utilisateurs;
+import projetjava.BackendBlackjack.service.UtilisateursService;
 
 @RestController
 @RequestMapping("/api/utilisateurs")
+@CrossOrigin(origins = "http://localhost:5173") // si tu utilises un frontend React en local
 public class UtilisateurController {
 
-    private final UtilisateurService utilisateurService;
+    private final UtilisateursService utilisateursService;
 
-    public UtilisateurController(UtilisateurService utilisateurService) {
-        this.utilisateurService = utilisateurService;
+    public UtilisateurController(UtilisateursService utilisateursService) {
+        this.utilisateursService = utilisateursService;
     }
 
     @PostMapping
-    public ResponseEntity<Utilisateur> creerUtilisateur(
+    public ResponseEntity<Utilisateurs> creerUtilisateur(
             @Valid @RequestBody UserCreationDTO userDTO) {
-        Utilisateur nouvelUtilisateur = utilisateurService.ajouterUtilisateur(userDTO);
+        Utilisateurs nouvelUtilisateur = utilisateursService.ajouterUtilisateur(userDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(nouvelUtilisateur);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Utilisateur> getUtilisateurById(@PathVariable Long id) {
-        Utilisateur utilisateur = utilisateurService.getUtilisateurById(id);
+    public ResponseEntity<Utilisateurs> getUtilisateurById(@PathVariable Long id) {
+        Utilisateurs utilisateur = utilisateursService.getUtilisateurById(id);
         return ResponseEntity.ok(utilisateur);
     }
 }

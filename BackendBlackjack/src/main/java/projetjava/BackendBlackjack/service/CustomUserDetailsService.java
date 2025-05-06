@@ -1,7 +1,7 @@
 package projetjava.BackendBlackjack.service;
 
 import projetjava.BackendBlackjack.dto.RegistrationRequest;
-import projetjava.BackendBlackjack.model.Utilisateur;
+import projetjava.BackendBlackjack.model.Utilisateurs;
 import projetjava.BackendBlackjack.repository.UtilisateurRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,7 +23,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        Utilisateur user = utilisateurRepository.findByEmail(email)
+        Utilisateurs user = utilisateurRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Utilisateur non trouvé avec l'email: " + email));
         return new org.springframework.security.core.userdetails.User(
                 user.getEmail(),
@@ -42,7 +42,7 @@ public class CustomUserDetailsService implements UserDetailsService {
             throw new IllegalArgumentException("Un utilisateur avec cet e-mail existe déjà");
         }
 
-        Utilisateur user = new Utilisateur();
+        Utilisateurs user = new Utilisateurs();
         user.setNom(request.getNom());
         user.setEmail(request.getEmail());
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));

@@ -11,6 +11,7 @@ function MainPage() {
     onHit,
     onStand,
     onRestart,
+    stats,
   } = useBlackjack();
 
   return (
@@ -24,6 +25,7 @@ function MainPage() {
         onRestart={onRestart}
         isGameOver={isGameOver}
         message={message}
+        stats={stats}
       />
     </>
   );
