@@ -17,15 +17,16 @@ import {
 import Modal from "./Modal";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
+import { useStats } from "../context/StatsContext"; // <-- ici on importe le contexte
 
 function Navbar() {
   const [modalType, setModalType] = useState(null);
   const navigate = useNavigate();
+  const { stats } = useStats(); // <-- récupération des statistiques via contexte
 
-  const [userData, setUserData] = useState(null); // Données de l'utilisateur (nom, email)
-  const [stats, setStats] = useState(null); // Données des statistiques de jeu
+  const [userData, setUserData] = useState(null); // Données de l'utilisateur
 
-  // Récupérer les données utilisateur (nom, email)
+  // Récupération des données utilisateur (nom, email)
   useEffect(() => {
     const userId = localStorage.getItem("userId");
     const token = localStorage.getItem("token");
@@ -35,20 +36,18 @@ function Navbar() {
     axios
       .get(`http://localhost:8080/api/utilisateurs/${userId}`, {
         headers: {
-          Authorization: `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       })
       .then((response) => {
         setUserData(response.data);
       })
       .catch((error) => {
-        console.error(
-          "Erreur de récupération des données utilisateur :",
-          error
-        );
+        console.error("Erreur de récupération des données utilisateur :", error);
       });
   }, []);
 
+  // Redirection si token manquant
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -56,26 +55,6 @@ function Navbar() {
     }
   }, []);
 
-
-  useEffect(() => {
-    const userId = localStorage.getItem("userId");
-    const token = localStorage.getItem("token");
-  
-    if (!userId || !token) return;
-  
-    axios.get(`http://localhost:8080/api/statistiques/${userId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    })
-    .then((response) => {
-      setStats(response.data);
-    })
-    .catch((error) => {
-      console.error("Erreur de récupération des statistiques de jeu :", error);
-    });
-  }, []);
-  
   const handleLogoutConfirm = () => {
     Swal.fire({
       title: "Déconnexion",
@@ -86,14 +65,12 @@ function Navbar() {
       cancelButtonColor: "#3498db",
       confirmButtonText: "Oui, déconnecter",
       cancelButtonText: "Annuler",
-      background: "#1e293b", // bleu nuit
-      color: "#f8fafc", // texte clair
+      background: "#1e293b",
+      color: "#f8fafc",
       customClass: {
         popup: "rounded-xl shadow-lg",
-        confirmButton:
-          "px-4 py-2 text-white bg-red-600 hover:bg-red-700 rounded",
-        cancelButton:
-          "px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded",
+        confirmButton: "px-4 py-2 text-white bg-red-600 hover:bg-red-700 rounded",
+        cancelButton: "px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded",
       },
     }).then((result) => {
       if (result.isConfirmed) {
@@ -126,10 +103,7 @@ function Navbar() {
     <>
       <div className="flex justify-between items-center p-3 bg-gradient-to-r from-slate-800 to-slate-900 backdrop-blur-md shadow-md text-white border-b border-white/20">
         <h2 className="text-xl font-bold font-serif tracking-wide">
-          <FontAwesomeIcon
-            icon={faWandMagicSparkles}
-            className="mr-2 text-yellow-400"
-          />
+          <FontAwesomeIcon icon={faWandMagicSparkles} className="mr-2 text-yellow-400" />
           Jeux Blackjack
         </h2>
         <div className="flex gap-8 text-xl cursor-pointer">

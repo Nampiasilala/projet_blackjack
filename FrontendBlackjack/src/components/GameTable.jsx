@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import PlayerHand from "./PlayerHand";
 import DealerHand from "./DealerHand";
 import Controls from "./Controls";
+import { useStats } from "../context/StatsContext";
 
 function GameTable({
   playerCards,
@@ -13,47 +13,56 @@ function GameTable({
   isGameOver,
   message,
 }) {
-  const [stats, setStats] = useState(null);
+  const [localStats, setLocalStats] = useState(null);
+  const { stats, fetchStats, updateStats } = useStats(); // 👉 assure-toi que `fetchStats` est bien dispo
+  const [hasUpdatedStats, setHasUpdatedStats] = useState(false);
+
+  // ✅ Charger les stats dès le démarrage
+  useEffect(() => {
+    const loadStats = async () => {
+      const userId = localStorage.getItem("userId");
+      const token = localStorage.getItem("token");
+      if (!userId || !token) return;
+
+      try {
+        const fetched = await fetchStats(userId, token);
+        setLocalStats(fetched);
+      } catch (error) {
+        console.error("Erreur lors du chargement des stats :", error);
+      }
+    };
+
+    loadStats();
+  }, []); // 👈 appel au démarrage seulement
+
+  // 🔄 Mettre à jour les stats en cas de victoire/défaite
+  useEffect(() => {
+    const handleGameEnd = async () => {
+      const userId = localStorage.getItem("userId");
+      const token = localStorage.getItem("token");
+
+      if (!isGameOver || !message || !userId || !token || hasUpdatedStats) return;
+
+      const lowerMessage = message.toLowerCase();
+      const isVictory = lowerMessage.includes("vous avez gagné");
+
+      try {
+        const updated = await updateStats({ isVictory, userId, token });
+        setLocalStats(updated);
+        setHasUpdatedStats(true);
+      } catch (error) {
+        console.error("Erreur mise à jour stats:", error);
+      }
+    };
+
+    handleGameEnd();
+  }, [isGameOver, message, updateStats, hasUpdatedStats]);
 
   useEffect(() => {
-    const userId = localStorage.getItem("userId");
-    const token = localStorage.getItem("token");
-  
-    console.log('Conditions:', { isGameOver, message, userId, token });
-    if (!isGameOver || !message || !userId || !token) {
-      console.log('Arrêt - conditions non remplies');
-      return;
+    if (!isGameOver) {
+      setHasUpdatedStats(false);
     }
-  
-    const isVictory = message.toLowerCase().includes("gagné");
-  
-    const payload = {
-      utilisateur: { id: userId },
-      parties_gagnees: isVictory ? 1 : 0,
-      parties_perdues: isVictory ? 0 : 1,
-    };
-  
-    console.log('Envoi des stats:', payload);
-  
-    axios
-      .put(`http://localhost:8080/api/statistiques`, payload, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-      })
-      .then((response) => {
-        console.log("Statistiques mises à jour :", response.data);
-        setStats(response.data); // Utilisez directement les données retournées
-      })
-      .catch((error) => {
-        console.error("Erreur détaillée:", {
-          message: error.message,
-          response: error.response?.data,
-          stack: error.stack
-        });
-      });
-  }, [isGameOver, message]);
+  }, [isGameOver]);
 
   return (
     <div className="m-0 relative h-screen flex items-center justify-center text-white">
@@ -67,8 +76,9 @@ function GameTable({
       </video>
 
       <div className="absolute top-4 right-6 z-20 bg-black/50 text-white p-4 rounded-xl border border-white/20 shadow-lg backdrop-blur-md text-sm font-mono space-y-1">
-        <p>✅ Parties gagnées : {stats?.parties_gagnees ?? "-"}</p>
-        <p>❌ Parties perdues : {stats?.parties_perdues ?? "-"}</p>
+        <p>✅ Parties gagnées: {localStats?.partiesGagnees ?? 0}</p>
+        <p>❌ Parties perdues: {localStats?.partiesPerdues ?? 0}</p>
+        <p>🎮 Parties jouées: {localStats?.partiesJouees ?? 0}</p>
       </div>
 
       <div className="relative z-10 flex flex-col items-center justify-center w-[90%] max-w-4xl p-6 rounded-2xl shadow-2xl backdrop-blur-md bg-black/50 border border-white/20">
@@ -77,9 +87,7 @@ function GameTable({
         </h1>
 
         <DealerHand cards={dealerCards} isGameOver={isGameOver} />
-
         <div className="w-full h-0.5 my-4 bg-white/30 rounded-full" />
-
         <PlayerHand cards={playerCards} />
 
         <p className="text-lg mt-6 font-medium">{message}</p>
