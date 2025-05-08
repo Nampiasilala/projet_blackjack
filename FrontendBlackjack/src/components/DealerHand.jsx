@@ -16,5 +16,4 @@ function DealerHand({ cards, isGameOver }) {
   );
 }
 
-// Assure-toi que tu fais l'export par défaut
 export default DealerHand;

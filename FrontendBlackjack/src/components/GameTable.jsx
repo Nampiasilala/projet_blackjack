@@ -3,6 +3,12 @@ import PlayerHand from "./PlayerHand";
 import DealerHand from "./DealerHand";
 import Controls from "./Controls";
 import { useStats } from "../context/StatsContext";
+import {
+  faTrophy,
+  faXmark,
+  faGamepad,
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 function GameTable({
   playerCards,
@@ -14,10 +20,9 @@ function GameTable({
   message,
 }) {
   const [localStats, setLocalStats] = useState(null);
-  const { stats, fetchStats, updateStats } = useStats(); // 👉 assure-toi que `fetchStats` est bien dispo
+  const { stats, fetchStats, updateStats } = useStats();
   const [hasUpdatedStats, setHasUpdatedStats] = useState(false);
 
-  // ✅ Charger les stats dès le démarrage
   useEffect(() => {
     const loadStats = async () => {
       const userId = localStorage.getItem("userId");
@@ -33,30 +38,38 @@ function GameTable({
     };
 
     loadStats();
-  }, []); // 👈 appel au démarrage seulement
+  }, []);
 
-  // 🔄 Mettre à jour les stats en cas de victoire/défaite
   useEffect(() => {
     const handleGameEnd = async () => {
       const userId = localStorage.getItem("userId");
       const token = localStorage.getItem("token");
-
-      if (!isGameOver || !message || !userId || !token || hasUpdatedStats) return;
-
+  
+      if (!isGameOver || !message || !userId || !token || hasUpdatedStats)
+        return;
+  
       const lowerMessage = message.toLowerCase();
-      const isVictory = lowerMessage.includes("vous avez gagné");
-
+      const isVictory = lowerMessage.includes("vous gagnez");
+  
+      if (isVictory) {
+        console.log("Victoire détectée, mise à jour des stats...");
+      } else {
+        console.log("Défaite détectée...");
+      }
+  
       try {
         const updated = await updateStats({ isVictory, userId, token });
+        console.log("Stats mises à jour:", updated);
         setLocalStats(updated);
         setHasUpdatedStats(true);
       } catch (error) {
         console.error("Erreur mise à jour stats:", error);
       }
     };
-
+  
     handleGameEnd();
   }, [isGameOver, message, updateStats, hasUpdatedStats]);
+  
 
   useEffect(() => {
     if (!isGameOver) {
@@ -76,9 +89,20 @@ function GameTable({
       </video>
 
       <div className="absolute top-4 right-6 z-20 bg-black/50 text-white p-4 rounded-xl border border-white/20 shadow-lg backdrop-blur-md text-sm font-mono space-y-1">
-        <p>✅ Parties gagnées: {localStats?.partiesGagnees ?? 0}</p>
-        <p>❌ Parties perdues: {localStats?.partiesPerdues ?? 0}</p>
-        <p>🎮 Parties jouées: {localStats?.partiesJouees ?? 0}</p>
+        <p>
+          <FontAwesomeIcon icon={faTrophy} className="text-green-500 mr-2" />
+          Parties gagnées: {localStats?.partiesGagnees ?? 0}
+        </p>
+
+        <p>
+          <FontAwesomeIcon icon={faXmark} className="text-red-500 mr-2" />
+          Parties perdues: {localStats?.partiesPerdues ?? 0}
+        </p>
+
+        <p>
+          <FontAwesomeIcon icon={faGamepad} className="text-blue-500 mr-2" />
+          Parties jouées: {localStats?.partiesJouees ?? 0}
+        </p>
       </div>
 
       <div className="relative z-10 flex flex-col items-center justify-center w-[90%] max-w-4xl p-6 rounded-2xl shadow-2xl backdrop-blur-md bg-black/50 border border-white/20">

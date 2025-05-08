@@ -10,7 +10,7 @@ import projetjava.BackendBlackjack.service.UtilisateursService;
 
 @RestController
 @RequestMapping("/api/utilisateurs")
-@CrossOrigin(origins = "http://localhost:5173") // si tu utilises un frontend React en local
+@CrossOrigin(origins = "http://localhost:5173")
 public class UtilisateurController {
 
     private final UtilisateursService utilisateursService;

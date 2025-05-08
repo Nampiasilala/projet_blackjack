@@ -22,7 +22,7 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true); // démarrer le chargement
+    setLoading(true);
 
     try {
       const response = await axios.post(
@@ -52,7 +52,7 @@ function Login() {
         toast.error("Erreur serveur !");
       }
     } finally {
-      setLoading(false); // arrêt du chargement dans tous les cas
+      setLoading(false);
     }
   };
 
