@@ -1,5 +1,6 @@
 package projetjava.BackendBlackjack.service;
 
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import projetjava.BackendBlackjack.model.StatistiquesJeu;
@@ -18,9 +19,12 @@ public class StatistiquesJeuService {
         return statistiquesJeuRepository.save(statistiquesJeu);
     }
 
-    // Méthode pour mettre à jour des statistiques
+    // ✅ Méthode pour mettre à jour des statistiques avec flush et transaction
+    @Transactional
     public StatistiquesJeu updateStatistiques(StatistiquesJeu statistiquesJeu) {
-        return statistiquesJeuRepository.save(statistiquesJeu);
+        StatistiquesJeu updatedStats = statistiquesJeuRepository.save(statistiquesJeu);
+        statistiquesJeuRepository.flush(); // force la persistance en base
+        return updatedStats;
     }
 
     // Méthode pour supprimer des statistiques par ID

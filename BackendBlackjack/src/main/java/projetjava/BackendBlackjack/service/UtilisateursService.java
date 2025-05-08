@@ -10,8 +10,7 @@ import projetjava.BackendBlackjack.repository.StatistiquesJeuRepository;
 
 import java.util.Optional;
 
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;  // Pour le hachage du mot de passe
-
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder; // Pour le hachage du mot de passe
 
 @Service
 public class UtilisateursService {
@@ -23,7 +22,7 @@ public class UtilisateursService {
     private StatistiquesJeuRepository statistiquesJeuRepository;
 
     @Autowired
-    private BCryptPasswordEncoder passwordEncoder;  // Utilisation de BCryptPasswordEncoder pour hacher le mot de passe
+    private BCryptPasswordEncoder passwordEncoder; // Utilisation de BCryptPasswordEncoder pour hacher le mot de passe
 
     public Utilisateurs ajouterUtilisateur(UserCreationDTO dto) {
         Utilisateurs utilisateur = new Utilisateurs();
@@ -46,6 +45,9 @@ public class UtilisateursService {
         stats.setMeilleureSerieVictoires(0);
         statistiquesJeuRepository.save(stats);
 
+        // Log pour vérifier si les statistiques sont bien sauvegardées
+        System.out.println("Statistiques sauvegardées : " + stats);
+
         return utilisateurCree;
     }
 
@@ -54,4 +56,3 @@ public class UtilisateursService {
         return utilisateur.orElseThrow(() -> new RuntimeException("Utilisateur non trouvé avec l'ID : " + id));
     }
 }
-

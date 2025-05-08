@@ -16,19 +16,19 @@ public class StatistiquesJeu {
     private Utilisateurs utilisateur;
 
     @Column(name = "parties_jouees")
-    private int partiesJouees;
+    private int partiesJouees = 0;
 
     @Column(name = "parties_gagnees")
-    private int partiesGagnees;
+    private int partiesGagnees = 0;
 
     @Column(name = "parties_perdues")
-    private int partiesPerdues;
+    private int partiesPerdues = 0;
 
     @Column(name = "jetons_gagnes")
-    private int jetonsGagnes;
+    private int jetonsGagnes = 0;
 
     @Column(name = "meilleure_serie_victoires")
-    private int meilleureSerieVictoires;
+    private int meilleureSerieVictoires = 0;
 
     // ====== Getters et Setters ======
 
