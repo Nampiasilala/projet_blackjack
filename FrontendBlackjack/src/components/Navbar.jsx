@@ -1,4 +1,5 @@
 import { useState } from "react";
+import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faGear,
@@ -41,23 +42,60 @@ function Navbar() {
     }
   };
 
-  const handleDeleteUser = (id) => {
-    // Exemple de confirmation ou suppression d’utilisateur
+  const handleDeleteUser = (id, nom) => {
     Swal.fire({
-      title: "Supprimer cet utilisateur ?",
-      text: "Cette action est irréversible.",
+      title: "Suppression d'utilisateur",
+      text: `Souhaitez-vous vraiment supprimer ${nom} ?`,  // Utilise des backticks pour une interpolation correcte
       icon: "warning",
       showCancelButton: true,
+      confirmButtonColor: "#e74c3c",
+      cancelButtonColor: "#3498db",
       confirmButtonText: "Oui, supprimer",
       cancelButtonText: "Annuler",
-    }).then((result) => {
+      background: "#1e293b",
+      color: "#f8fafc",
+      customClass: {
+        popup: "rounded-xl shadow-lg",
+        confirmButton: "px-4 py-2 text-white bg-red-600 hover:bg-red-700 rounded",
+        cancelButton: "px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded",
+      },
+    }).then(async (result) => {
       if (result.isConfirmed) {
-        // suppression via API ou mise à jour du contexte
-        setUsers(users.filter((user) => user.id !== id));
+        try {
+          const token = localStorage.getItem("token");
+  
+          await axios.delete(`http://localhost:8080/api/utilisateurs/${id}`, {
+            headers: {
+              Authorization: `Bearer ${token}`, // Utilise aussi les backticks ici
+            },
+          });
+  
+          // Mise à jour locale
+          setUsers(users.filter((user) => user.id !== id));
+  
+          Swal.fire({
+            title: "Supprimé",
+            text: "L'utilisateur a été supprimé avec succès.",
+            icon: "success",
+            timer: 2000,
+            showConfirmButton: false,
+            background: "#1e293b",
+            color: "#f8fafc",
+          });
+        } catch (error) {
+          console.error("Erreur de suppression :", error);
+          Swal.fire({
+            title: "Erreur",
+            text: "Impossible de supprimer l'utilisateur.",
+            icon: "error",
+            background: "#1e293b",
+            color: "#f8fafc",
+          });
+        }
       }
     });
   };
-
+  
   const handleLogoutConfirm = () => {
     Swal.fire({
       title: "Déconnexion",
