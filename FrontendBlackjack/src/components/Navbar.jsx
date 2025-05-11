@@ -4,6 +4,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faGear,
   faUser,
+  faTrash,
+  faUsersGear,
   faPowerOff,
   faUserPen,
   faRotateRight,
@@ -13,47 +15,20 @@ import {
   faVolumeXmark,
   faVolumeHigh,
   faWandMagicSparkles,
+  faUsers,
 } from "@fortawesome/free-solid-svg-icons";
 import Modal from "./Modal";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
-import { useStats } from "../context/StatsContext"; // <-- ici on importe le contexte
+import { useStats } from "../context/StatsContext";
+import { useUsers } from "../context/UsersContext";
 
 function Navbar() {
   const [modalType, setModalType] = useState(null);
   const navigate = useNavigate();
-  const { stats } = useStats(); // <-- récupération des statistiques via contexte
-
-  const [userData, setUserData] = useState(null); // Données de l'utilisateur
-
-  // Récupération des données utilisateur (nom, email)
-  useEffect(() => {
-    const userId = localStorage.getItem("userId");
-    const token = localStorage.getItem("token");
-
-    if (!userId || !token) return;
-
-    axios
-      .get(`http://localhost:8080/api/utilisateurs/${userId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      .then((response) => {
-        setUserData(response.data);
-      })
-      .catch((error) => {
-        console.error("Erreur de récupération des données utilisateur :", error);
-      });
-  }, []);
-
-  // Redirection si token manquant
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/");
-    }
-  }, []);
+  const { stats } = useStats();
+  const { users, setUsers } = useUsers();
+  const [userData, setUserData] = useState(null);
 
   const handleLogoutConfirm = () => {
     Swal.fire({
@@ -69,8 +44,10 @@ function Navbar() {
       color: "#f8fafc",
       customClass: {
         popup: "rounded-xl shadow-lg",
-        confirmButton: "px-4 py-2 text-white bg-red-600 hover:bg-red-700 rounded",
-        cancelButton: "px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded",
+        confirmButton:
+          "px-4 py-2 text-white bg-red-600 hover:bg-red-700 rounded",
+        cancelButton:
+          "px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded",
       },
     }).then((result) => {
       if (result.isConfirmed) {
@@ -88,6 +65,94 @@ function Navbar() {
       }
     });
   };
+  
+  // Récupération des données utilisateur (nom, email)
+  useEffect(() => {
+    const userId = localStorage.getItem("userId");
+    const token = localStorage.getItem("token");
+
+    if (!userId || !token) return;
+
+    axios
+      .get(`http://localhost:8080/api/utilisateurs/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((response) => {
+        setUserData(response.data);
+      })
+      .catch((error) => {
+        console.error(
+          "Erreur de récupération des données utilisateur :",
+          error
+        );
+      });
+  }, []);
+
+  // Redirection si token manquant
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/");
+    }
+  }, []);
+
+  const handleDeleteUser = (id, nom) => {
+    Swal.fire({
+      title: "Suppression d'utilisateur",
+      text: `Souhaitez-vous vraiment supprimer ${nom} ?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#e74c3c",
+      cancelButtonColor: "#3498db",
+      confirmButtonText: "Oui, supprimer",
+      cancelButtonText: "Annuler",
+      background: "#1e293b",
+      color: "#f8fafc",
+      customClass: {
+        popup: "rounded-xl shadow-lg",
+        confirmButton:
+          "px-4 py-2 text-white bg-red-600 hover:bg-red-700 rounded",
+        cancelButton:
+          "px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded",
+      },
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const token = localStorage.getItem("token");
+
+          await axios.delete(`http://localhost:8080/api/utilisateurs/${id}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          // Mise à jour locale
+          setUsers(users.filter((user) => user.id !== id));
+          
+          Swal.fire({
+            title: "Supprimé",
+            text: "L'utilisateur a été supprimé avec succès.",
+            icon: "success",
+            timer: 2000,
+            showConfirmButton: false,
+            background: "#1e293b",
+            color: "#f8fafc",
+          });
+        } catch (error) {
+          console.error("Erreur de suppression :", error);
+          Swal.fire({
+            title: "Erreur",
+            text: "Impossible de supprimer l'utilisateur.",
+            icon: "error",
+            background: "#1e293b",
+            color: "#f8fafc",
+          });
+        }
+      }
+    });
+  };
 
   const openModal = (type) => {
     if (type === "logout") {
@@ -99,11 +164,41 @@ function Navbar() {
 
   const closeModal = () => setModalType(null);
 
+  // Dans ton useEffect
+useEffect(() => {
+  const userId = localStorage.getItem("userId");
+  const token = localStorage.getItem("token");
+
+  if (!userId || !token) return;
+
+  axios
+    .get(`http://localhost:8080/api/utilisateurs/${userId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+    .then((response) => {
+      setUserData(response.data);
+    })
+    .catch((error) => {
+      console.error("Erreur de récupération des données utilisateur :", error);
+    });
+}, []);
+
+// Filtrer les utilisateurs pour exclure l'utilisateur connecté
+const filteredUsers = users.filter((user) => user.id !== userData?.id);
+
+
+
+
   return (
     <>
       <div className="flex justify-between items-center p-3 bg-gradient-to-r from-slate-800 to-slate-900 backdrop-blur-md shadow-md text-white border-b border-white/20">
         <h2 className="text-xl font-bold font-serif tracking-wide">
-          <FontAwesomeIcon icon={faWandMagicSparkles} className="mr-2 text-yellow-400" />
+          <FontAwesomeIcon
+            icon={faWandMagicSparkles}
+            className="mr-2 text-yellow-400"
+          />
           Jeux Blackjack
         </h2>
         <div className="flex gap-8 text-xl cursor-pointer">
@@ -111,6 +206,11 @@ function Navbar() {
             icon={faUser}
             className="hover:text-blue-400 transition"
             onClick={() => openModal("profile")}
+          />
+          <FontAwesomeIcon
+            icon={faUsersGear}
+            className="hover:text-blue-400 transition"
+            onClick={() => openModal("users")}
           />
           <FontAwesomeIcon
             icon={faGear}
@@ -214,6 +314,60 @@ function Navbar() {
                   </tr>
                 </tbody>
               </table>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {modalType === "users" && (
+        <Modal title="Gérer les utilisateurs" onClose={closeModal}>
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold text-blue-500 flex items-center gap-2">
+              <FontAwesomeIcon icon={faUsers} />
+              Tous les utilisateurs
+            </h2>
+
+            <div className="border rounded-lg shadow-md overflow-hidden">
+              <div className="max-h-[500px] overflow-y-auto">
+                <table className="w-full text-sm text-left">
+                  <thead className="bg-gray-100 sticky top-0 z-10">
+                    <tr>
+                      <th className="px-4 py-3 font-semibold text-gray-700">
+                        Nom
+                      </th>
+                      <th className="px-4 py-3 font-semibold text-gray-700">
+                        Email
+                      </th>
+                      <th className="px-4 py-3 font-semibold text-gray-700"></th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white">
+                    {filteredUsers.length === 0 ? (
+                      <tr>
+                        <td
+                          colSpan="3"
+                          className="px-4 py-4 text-center text-gray-500"
+                        >
+                          Aucun utilisateur trouvé.
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredUsers.map((user) => (
+                        <tr key={user.id} className="border-t hover:bg-gray-50">
+                          <td className="px-4 py-3">{user.nom}</td>
+                          <td className="px-4 py-3">{user.email}</td>
+                          <td
+                            className="px-4 py-3 text-red-500 hover:text-red-700 cursor-pointer"
+                            onClick={() => handleDeleteUser(user.id)}
+                          >
+                            <FontAwesomeIcon icon={faTrash} />
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </Modal>

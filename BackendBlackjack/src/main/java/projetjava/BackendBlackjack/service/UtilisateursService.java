@@ -7,7 +7,7 @@ import projetjava.BackendBlackjack.model.Utilisateurs;
 import projetjava.BackendBlackjack.model.StatistiquesJeu;
 import projetjava.BackendBlackjack.repository.UtilisateurRepository;
 import projetjava.BackendBlackjack.repository.StatistiquesJeuRepository;
-
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder; // Pour le hachage du mot de passe
@@ -55,4 +55,9 @@ public class UtilisateursService {
         Optional<Utilisateurs> utilisateur = utilisateurRepository.findById(id);
         return utilisateur.orElseThrow(() -> new RuntimeException("Utilisateur non trouvé avec l'ID : " + id));
     }
+
+    public List<Utilisateurs> getAllUtilisateurs() {
+        return utilisateurRepository.findAll();
+    }
+    
 }

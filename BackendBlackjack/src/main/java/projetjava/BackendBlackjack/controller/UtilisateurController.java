@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import projetjava.BackendBlackjack.dto.UserCreationDTO;
 import projetjava.BackendBlackjack.model.Utilisateurs;
 import projetjava.BackendBlackjack.service.UtilisateursService;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/utilisateurs")
@@ -31,4 +32,11 @@ public class UtilisateurController {
         Utilisateurs utilisateur = utilisateursService.getUtilisateurById(id);
         return ResponseEntity.ok(utilisateur);
     }
+
+    @GetMapping
+    public ResponseEntity<List<Utilisateurs>> getAllUtilisateurs() {
+        List<Utilisateurs> utilisateurs = utilisateursService.getAllUtilisateurs();
+        return ResponseEntity.ok(utilisateurs);
+    }
+
 }
