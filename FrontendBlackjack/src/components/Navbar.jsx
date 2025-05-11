@@ -1,5 +1,4 @@
-import { useState, useEffect } from "react";
-import axios from "axios";
+import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faGear,
@@ -22,13 +21,34 @@ import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 import { useStats } from "../context/StatsContext";
 import { useUsers } from "../context/UsersContext";
+import { useAuth } from "../context/AuthContext";  // Importer AuthContext
 
 function Navbar() {
   const [modalType, setModalType] = useState(null);
   const navigate = useNavigate();
   const { stats } = useStats();
-  const { users, setUsers } = useUsers();
-  const [userData, setUserData] = useState(null);
+  const { currentUser, logout } = useAuth();  // Utilisation du contexte Auth pour la déconnexion
+  const { users, setUsers } = useUsers();  // Utilisation du contexte Users
+  const openModal = (type) => setModalType(type);
+  const closeModal = () => setModalType(null);
+  
+
+  const handleDeleteUser = (id) => {
+    // Exemple de confirmation ou suppression d’utilisateur
+    Swal.fire({
+      title: "Supprimer cet utilisateur ?",
+      text: "Cette action est irréversible.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Oui, supprimer",
+      cancelButtonText: "Annuler",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // suppression via API ou mise à jour du contexte
+        setUsers(users.filter((user) => user.id !== id));
+      }
+    });
+  };
 
   const handleLogoutConfirm = () => {
     Swal.fire({
@@ -44,15 +64,12 @@ function Navbar() {
       color: "#f8fafc",
       customClass: {
         popup: "rounded-xl shadow-lg",
-        confirmButton:
-          "px-4 py-2 text-white bg-red-600 hover:bg-red-700 rounded",
-        cancelButton:
-          "px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded",
+        confirmButton: "px-4 py-2 text-white bg-red-600 hover:bg-red-700 rounded",
+        cancelButton: "px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded",
       },
     }).then((result) => {
       if (result.isConfirmed) {
-        localStorage.removeItem("token");
-        navigate("/");
+        logout();  // Utilisation de la fonction logout du context
         Swal.fire({
           title: "Déconnecté",
           text: "Vous avez été déconnecté avec succès.",
@@ -65,131 +82,8 @@ function Navbar() {
       }
     });
   };
-  
-  // Récupération des données utilisateur (nom, email)
-  useEffect(() => {
-    const userId = localStorage.getItem("userId");
-    const token = localStorage.getItem("token");
 
-    if (!userId || !token) return;
-
-    axios
-      .get(`http://localhost:8080/api/utilisateurs/${userId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      .then((response) => {
-        setUserData(response.data);
-      })
-      .catch((error) => {
-        console.error(
-          "Erreur de récupération des données utilisateur :",
-          error
-        );
-      });
-  }, []);
-
-  // Redirection si token manquant
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/");
-    }
-  }, []);
-
-  const handleDeleteUser = (id, nom) => {
-    Swal.fire({
-      title: "Suppression d'utilisateur",
-      text: `Souhaitez-vous vraiment supprimer ${nom} ?`,
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#e74c3c",
-      cancelButtonColor: "#3498db",
-      confirmButtonText: "Oui, supprimer",
-      cancelButtonText: "Annuler",
-      background: "#1e293b",
-      color: "#f8fafc",
-      customClass: {
-        popup: "rounded-xl shadow-lg",
-        confirmButton:
-          "px-4 py-2 text-white bg-red-600 hover:bg-red-700 rounded",
-        cancelButton:
-          "px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded",
-      },
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        try {
-          const token = localStorage.getItem("token");
-
-          await axios.delete(`http://localhost:8080/api/utilisateurs/${id}`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-
-          // Mise à jour locale
-          setUsers(users.filter((user) => user.id !== id));
-          
-          Swal.fire({
-            title: "Supprimé",
-            text: "L'utilisateur a été supprimé avec succès.",
-            icon: "success",
-            timer: 2000,
-            showConfirmButton: false,
-            background: "#1e293b",
-            color: "#f8fafc",
-          });
-        } catch (error) {
-          console.error("Erreur de suppression :", error);
-          Swal.fire({
-            title: "Erreur",
-            text: "Impossible de supprimer l'utilisateur.",
-            icon: "error",
-            background: "#1e293b",
-            color: "#f8fafc",
-          });
-        }
-      }
-    });
-  };
-
-  const openModal = (type) => {
-    if (type === "logout") {
-      handleLogoutConfirm();
-    } else {
-      setModalType(type);
-    }
-  };
-
-  const closeModal = () => setModalType(null);
-
-  // Dans ton useEffect
-useEffect(() => {
-  const userId = localStorage.getItem("userId");
-  const token = localStorage.getItem("token");
-
-  if (!userId || !token) return;
-
-  axios
-    .get(`http://localhost:8080/api/utilisateurs/${userId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-    .then((response) => {
-      setUserData(response.data);
-    })
-    .catch((error) => {
-      console.error("Erreur de récupération des données utilisateur :", error);
-    });
-}, []);
-
-// Filtrer les utilisateurs pour exclure l'utilisateur connecté
-const filteredUsers = users.filter((user) => user.id !== userData?.id);
-
-
-
+  const filteredUsers = users.filter((user) => user.id !== currentUser?.id);
 
   return (
     <>
@@ -220,7 +114,7 @@ const filteredUsers = users.filter((user) => user.id !== userData?.id);
           <FontAwesomeIcon
             icon={faPowerOff}
             className="hover:text-red-400 transition"
-            onClick={() => openModal("logout")}
+            onClick={handleLogoutConfirm}
           />
         </div>
       </div>
@@ -237,7 +131,7 @@ const filteredUsers = users.filter((user) => user.id !== userData?.id);
                   <tr className="border-b border-gray-200">
                     <td className="px-4 py-2 bg-gray-100 font-medium">Nom</td>
                     <td className="px-4 py-2 bg-gray-50">
-                      {userData?.nom ?? "Nom non disponible"}
+                      {currentUser?.nom ?? "Nom non disponible"}
                     </td>
                     <td className="px-2 py-2 bg-gray-50 text-blue-600 hover:text-blue-800">
                       <button>
@@ -248,7 +142,7 @@ const filteredUsers = users.filter((user) => user.id !== userData?.id);
                   <tr className="border-b border-gray-200">
                     <td className="px-4 py-2 bg-gray-100 font-medium">Email</td>
                     <td className="px-4 py-2 bg-gray-50">
-                      {userData?.email ?? "Email non disponible"}
+                      {currentUser?.email ?? "Email non disponible"}
                     </td>
                     <td className="px-2 py-2 bg-gray-50 text-blue-600 hover:text-blue-800">
                       <button>
@@ -265,7 +159,7 @@ const filteredUsers = users.filter((user) => user.id !== userData?.id);
                 <h2 className="text-lg font-semibold text-blue-500">
                   <FontAwesomeIcon icon={faChartPie} /> Statistiques de jeu
                 </h2>
-                <button className="text-red-500 hover:underline">
+                <button className="text-red-500 hover:text-red-700">
                   <FontAwesomeIcon icon={faRotateRight} /> restaurer
                 </button>
               </div>
