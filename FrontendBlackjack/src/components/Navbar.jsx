@@ -26,12 +26,20 @@ import { useAuth } from "../context/AuthContext";  // Importer AuthContext
 function Navbar() {
   const [modalType, setModalType] = useState(null);
   const navigate = useNavigate();
-  const { stats } = useStats();
+  const { resetStats, stats } = useStats();  // Récupérer resetStats depuis StatsContext
   const { currentUser, logout } = useAuth();  // Utilisation du contexte Auth pour la déconnexion
   const { users, setUsers } = useUsers();  // Utilisation du contexte Users
   const openModal = (type) => setModalType(type);
   const closeModal = () => setModalType(null);
   
+  // Fonction handleReset pour réinitialiser les stats
+  const handleReset = () => {
+    if (currentUser) {
+      const userId = currentUser.id;  // Utiliser l'ID de l'utilisateur actuel
+      const token = currentUser.token;  // Utiliser le token de l'utilisateur actuel
+      resetStats(userId, token);
+    }
+  };
 
   const handleDeleteUser = (id) => {
     // Exemple de confirmation ou suppression d’utilisateur
@@ -159,7 +167,7 @@ function Navbar() {
                 <h2 className="text-lg font-semibold text-blue-500">
                   <FontAwesomeIcon icon={faChartPie} /> Statistiques de jeu
                 </h2>
-                <button className="text-red-500 hover:text-red-700">
+                <button className="text-red-500 hover:text-red-700"       onClick={handleReset}>
                   <FontAwesomeIcon icon={faRotateRight} /> restaurer
                 </button>
               </div>

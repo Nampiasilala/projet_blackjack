@@ -20,7 +20,7 @@ function GameTable({
   message,
 }) {
   const [localStats, setLocalStats] = useState(null);
-  const { stats, fetchStats, updateStats } = useStats();
+  const { stats, fetchStats, updateStats, handleReset } = useStats();
   const [hasUpdatedStats, setHasUpdatedStats] = useState(false);
 
   useEffect(() => {
@@ -41,22 +41,26 @@ function GameTable({
   }, []);
 
   useEffect(() => {
+    setLocalStats(stats);
+  }, [stats]);
+
+  useEffect(() => {
     const handleGameEnd = async () => {
       const userId = localStorage.getItem("userId");
       const token = localStorage.getItem("token");
-  
+
       if (!isGameOver || !message || !userId || !token || hasUpdatedStats)
         return;
-  
+
       const lowerMessage = message.toLowerCase();
       const isVictory = lowerMessage.includes("vous gagnez");
-  
+
       if (isVictory) {
         console.log("Victoire détectée, mise à jour des stats...");
       } else {
         console.log("Défaite détectée...");
       }
-  
+
       try {
         const updated = await updateStats({ isVictory, userId, token });
         console.log("Stats mises à jour:", updated);
@@ -66,10 +70,9 @@ function GameTable({
         console.error("Erreur mise à jour stats:", error);
       }
     };
-  
+
     handleGameEnd();
   }, [isGameOver, message, updateStats, hasUpdatedStats]);
-  
 
   useEffect(() => {
     if (!isGameOver) {
@@ -91,17 +94,17 @@ function GameTable({
       <div className="absolute top-4 right-6 z-20 bg-black/50 text-white p-4 rounded-xl border border-white/20 shadow-lg backdrop-blur-md text-sm font-mono space-y-1">
         <p>
           <FontAwesomeIcon icon={faTrophy} className="text-green-500 mr-2" />
-          Parties gagnées: {localStats?.partiesGagnees ?? 0}
+          Parties gagnées: {stats?.partiesGagnees ?? 0}
         </p>
 
         <p>
           <FontAwesomeIcon icon={faXmark} className="text-red-500 mr-2" />
-          Parties perdues: {localStats?.partiesPerdues ?? 0}
+          Parties perdues: {stats?.partiesPerdues ?? 0}
         </p>
 
         <p>
           <FontAwesomeIcon icon={faGamepad} className="text-blue-500 mr-2" />
-          Parties jouées: {localStats?.partiesJouees ?? 0}
+          Parties jouées: {stats?.partiesJouees ?? 0}
         </p>
       </div>
 
