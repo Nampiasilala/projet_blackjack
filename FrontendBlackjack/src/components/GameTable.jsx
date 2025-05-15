@@ -84,13 +84,23 @@ function GameTable({
       const userId = localStorage.getItem("userId");
       const token = localStorage.getItem("token");
 
-      if (!isGameOver || !message || !userId || !token || hasUpdatedStatsRef.current || !currentBet)
+      if (
+        !isGameOver ||
+        !message ||
+        !userId ||
+        !token ||
+        hasUpdatedStatsRef.current ||
+        !currentBet
+      )
         return;
 
       const lowerMessage = message.toLowerCase();
-      const isVictory = lowerMessage.includes("vous gagnez") || lowerMessage.includes("black jack");
+      const isVictory =
+        lowerMessage.includes("vous gagnez") ||
+        lowerMessage.includes("black jack");
       const isPush = lowerMessage.includes("égalité");
-      const isBlackjack = !isPush && playerCards.length === 2 && getHandValue(playerCards) === 21;
+      const isBlackjack =
+        !isPush && playerCards.length === 2 && getHandValue(playerCards) === 21;
 
       let newBalance = playerBalance;
 
@@ -179,10 +189,10 @@ function GameTable({
           <FontAwesomeIcon icon={faXmark} className="text-red-500 mr-2" />
           Parties perdues: {stats?.partiesPerdues ?? 0}
         </p>
-        <p>
+        {/* <p>
           <FontAwesomeIcon icon={faEquals} className="text-blue-300 mr-2" />
           Égalités: {stats?.partiesEgalites ?? 0}
-        </p>
+        </p> */}
         <p>
           <FontAwesomeIcon icon={faGamepad} className="text-blue-500 mr-2" />
           Parties jouées: {stats?.partiesJouees ?? 0}
@@ -190,7 +200,7 @@ function GameTable({
       </div>
 
       <div className="absolute top-4 left-6 z-20 bg-black/50 text-white p-4 rounded-xl border border-white/20 shadow-lg backdrop-blur-md text-sm font-mono space-y-1">
-        <p>Solde actuel: {playerBalance}$</p>
+        {/* <p>Solde actuel: {playerBalance}$</p> */}
         <p>
           <FontAwesomeIcon icon={faTrophy} className="text-green-500 mr-2" />
           Jetons gagnés: {stats?.jetonsGagnes ?? 0}
@@ -202,24 +212,40 @@ function GameTable({
       </div>
 
       <div className="relative z-10 flex flex-col items-center justify-center w-[90%] max-w-4xl p-6 rounded-2xl shadow-2xl backdrop-blur-md bg-black/50 border border-white/20">
-        <h1 className="text-2xl font-bold mb-6 font-serif tracking-wider">Blackjack</h1>
+        <h1 className="text-2xl font-bold mb-6 font-serif tracking-wider">
+          Blackjack
+        </h1>
 
         {!hasBet && (
           <div className="flex flex-wrap justify-center gap-4 mb-6 z-20">
-            {[5, 10, 25, 50, 100].map((value) => (
-              <button
-                key={value}
-                onClick={() => placeBet(value)}
-                disabled={value > playerBalance}
-                className={`px-4 py-2 rounded-full ${
-                  value > playerBalance
-                    ? "bg-gray-600 cursor-not-allowed opacity-50"
-                    : "bg-purple-600 hover:bg-purple-700"
-                } text-white font-semibold shadow`}
-              >
-                Miser {value}$
-              </button>
-            ))}
+            {[5, 10, 25, 50, 100].map((value) => {
+              const colors = {
+                5: "bg-red-600",
+                10: "bg-blue-600",
+                25: "bg-green-600",
+                50: "bg-black",
+                100: "bg-purple-700",
+              };
+              return (
+                <button
+                  key={value}
+                  onClick={() => placeBet(value)}
+                  disabled={value > playerBalance}
+                  className={`relative w-16 aspect-square rounded-full text-white font-bold text-lg shadow-lg border-4 border-white 
+          ${
+            value > playerBalance
+              ? "bg-gray-600 cursor-not-allowed opacity-50"
+              : `${colors[value]} hover:brightness-110`
+          }
+        `}
+                >
+                  <span className="absolute inset-0 flex items-center justify-center">
+                    {value}
+                  </span>
+                  <div className="absolute inset-0 rounded-full border-dashed border-2 border-white pointer-events-none" />
+                </button>
+              );
+            })}
           </div>
         )}
 
