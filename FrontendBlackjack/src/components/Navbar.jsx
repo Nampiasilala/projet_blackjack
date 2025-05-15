@@ -244,6 +244,14 @@ function Navbar() {
                       {stats?.jetonsGagnes ?? "-"}
                     </td>
                   </tr>
+                  <tr className="border-b border-blue-200">
+                    <td className="px-4 py-2 bg-gray-100 font-medium">
+                      Total de jetons perdus
+                    </td>
+                    <td className="px-4 py-2 bg-white">
+                      {stats?.jetonsPerdus ?? "-"}
+                    </td>
+                  </tr>
                   <tr>
                     <td className="px-4 py-2 bg-gray-100 font-medium">
                       Meilleure série de victoires

@@ -16,7 +16,7 @@ export function StatsProvider({ children }) {
           },
         }
       );
-      setStats(response.data); // ✅ on met à jour le state local
+      setStats(response.data);
       return response.data;
     } catch (error) {
       console.error("Erreur lors de la récupération des stats :", error);
@@ -56,7 +56,7 @@ export function StatsProvider({ children }) {
     }
   };
 
-  const updateStats = async ({ isVictory, userId, token }) => {
+  const updateStats = async ({ isVictory, userId, token, bet }) => {
     try {
       const { data: currentStats } = await axios.get(
         `http://localhost:8080/api/statistiques/${userId}`,
@@ -67,13 +67,18 @@ export function StatsProvider({ children }) {
         partiesJouees: currentStats.partiesJouees + 1,
         partiesGagnees: currentStats.partiesGagnees + (isVictory ? 1 : 0),
         partiesPerdues: currentStats.partiesPerdues + (isVictory ? 0 : 1),
-        jetonsGagnes: currentStats.jetonsGagnes,
+        jetonsGagnes: isVictory
+          ? currentStats.jetonsGagnes + bet
+          : currentStats.jetonsGagnes,
+        jetonsPerdus: isVictory
+          ? currentStats.jetonsPerdus
+          : (currentStats.jetonsPerdus || 0) + bet,
         meilleureSerieVictoires: isVictory
           ? Math.max(
-              currentStats.meilleureSerieVictoires,
-              currentStats.currentWinStreak + 1
+              currentStats.meilleureSerieVictoires || 0,
+              (currentStats.currentWinStreak || 0) + 1
             )
-          : currentStats.meilleureSerieVictoires,
+          : currentStats.meilleureSerieVictoires || 0,
       };
 
       const { data: newStats } = await axios.put(
@@ -96,7 +101,9 @@ export function StatsProvider({ children }) {
   };
 
   return (
-    <StatsContext.Provider value={{ stats, fetchStats, updateStats, resetStats }}>
+    <StatsContext.Provider
+      value={{ stats, fetchStats, updateStats, resetStats }}
+    >
       {children}
     </StatsContext.Provider>
   );

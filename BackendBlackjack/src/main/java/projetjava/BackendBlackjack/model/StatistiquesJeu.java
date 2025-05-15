@@ -10,7 +10,6 @@ public class StatistiquesJeu {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Remplacer l'ancien utilisateurId par une vraie relation ManyToOne
     @ManyToOne
     @JoinColumn(name = "utilisateur_id", nullable = false)
     private Utilisateurs utilisateur;
@@ -26,6 +25,9 @@ public class StatistiquesJeu {
 
     @Column(name = "jetons_gagnes")
     private int jetonsGagnes = 0;
+
+    @Column(name = "jetons_perdus")
+    private int jetonsPerdus = 0;
 
     @Column(name = "meilleure_serie_victoires")
     private int meilleureSerieVictoires = 0;
@@ -78,6 +80,14 @@ public class StatistiquesJeu {
 
     public void setJetonsGagnes(int jetonsGagnes) {
         this.jetonsGagnes = jetonsGagnes;
+    }
+
+    public int getJetonsPerdus() {
+        return jetonsPerdus;
+    }
+
+    public void setJetonsPerdus(int jetonsPerdus) {
+        this.jetonsPerdus = jetonsPerdus;
     }
 
     public int getMeilleureSerieVictoires() {

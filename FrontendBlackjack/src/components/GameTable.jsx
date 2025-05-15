@@ -65,7 +65,8 @@ function GameTable({
       }
 
       try {
-        const updated = await updateStats({ isVictory, userId, token });
+        const updated = await updateStats({ isVictory, userId, token, bet });
+        if (!bet) return;
         console.log("Stats mises à jour:", updated);
         setLocalStats(updated);
         setHasUpdatedStats(true);
@@ -112,6 +113,20 @@ function GameTable({
           Parties jouées: {stats?.partiesJouees ?? 0}
         </p>
       </div>
+      <div className="absolute top-4 left-6 z-20 bg-black/50 text-white p-4 rounded-xl border border-white/20 shadow-lg backdrop-blur-md text-sm font-mono space-y-1">
+        <p>
+ Pour le solde :
+        </p>
+        <p>
+          <FontAwesomeIcon icon={faTrophy} className="text-green-500 mr-2" />
+          Jetons gagnées: {stats?.jetonsGagnes ?? 0}
+        </p>
+
+        <p>
+          <FontAwesomeIcon icon={faXmark} className="text-red-500 mr-2" />
+          Jetons perdues: {stats?.jetonsPerdus ?? 0}
+        </p>
+      </div>
 
       <div className="relative z-10 flex flex-col items-center justify-center w-[90%] max-w-4xl p-6 rounded-2xl shadow-2xl backdrop-blur-md bg-black/50 border border-white/20">
         <h1 className="text-2xl font-bold mb-6 font-serif tracking-wider">
@@ -147,11 +162,7 @@ function GameTable({
             <div className="mt-2 mb-4 text-lg font-semibold text-yellow-300">
               Mise actuelle : {bet}$
             </div>
-            <Controls
-              onHit={onHit}
-              onStand={onStand}
-              isGameOver={isGameOver}
-            />
+            <Controls onHit={onHit} onStand={onStand} isGameOver={isGameOver} />
           </>
         )}
         {isGameOver && showPostGameOptions && (

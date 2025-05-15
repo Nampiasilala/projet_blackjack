@@ -53,8 +53,8 @@ public class StatistiquesJeuController {
         existingStats.setPartiesGagnees(newStats.getPartiesGagnees());
         existingStats.setPartiesPerdues(newStats.getPartiesPerdues());
         existingStats.setJetonsGagnes(newStats.getJetonsGagnes());
+        existingStats.setJetonsPerdus(newStats.getJetonsPerdus());
         existingStats.setMeilleureSerieVictoires(newStats.getMeilleureSerieVictoires());
-
         // 4. Toujours maintenir la relation utilisateur
         existingStats.setUtilisateur(user);
 
