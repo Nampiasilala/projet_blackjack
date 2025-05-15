@@ -22,6 +22,9 @@ function GameTable({
   const [localStats, setLocalStats] = useState(null);
   const { stats, fetchStats, updateStats, handleReset } = useStats();
   const [hasUpdatedStats, setHasUpdatedStats] = useState(false);
+  const [bet, setBet] = useState(null); // jeton sélectionné
+  const [hasBet, setHasBet] = useState(false); // indique si on a placé une mise
+  const [showPostGameOptions, setShowPostGameOptions] = useState(false);
 
   useEffect(() => {
     const loadStats = async () => {
@@ -66,6 +69,7 @@ function GameTable({
         console.log("Stats mises à jour:", updated);
         setLocalStats(updated);
         setHasUpdatedStats(true);
+        setShowPostGameOptions(true);
       } catch (error) {
         console.error("Erreur mise à jour stats:", error);
       }
@@ -77,6 +81,7 @@ function GameTable({
   useEffect(() => {
     if (!isGameOver) {
       setHasUpdatedStats(false);
+      setShowPostGameOptions(false);
     }
   }, [isGameOver]);
 
@@ -113,18 +118,67 @@ function GameTable({
           Blackjack
         </h1>
 
-        <DealerHand cards={dealerCards} isGameOver={isGameOver} />
-        <div className="w-full h-0.5 my-4 bg-white/30 rounded-full" />
-        <PlayerHand cards={playerCards} />
+        {/* 👉 Boutons de mise visibles si aucune mise encore */}
+        {!hasBet && (
+          <div className="flex flex-wrap justify-center gap-4 mb-6 z-20">
+            {[5, 10, 25, 50, 100].map((value) => (
+              <button
+                key={value}
+                onClick={() => {
+                  setBet(value);
+                  setHasBet(true);
+                }}
+                className="px-4 py-2 rounded-full bg-purple-600 hover:bg-purple-700 text-white font-semibold shadow"
+              >
+                Miser {value}$
+              </button>
+            ))}
+          </div>
+        )}
 
-        <p className="text-lg mt-6 font-medium">{message}</p>
+        {/* 👉 Jeu actif après mise */}
+        {hasBet && (
+          <>
+            <DealerHand cards={dealerCards} isGameOver={isGameOver} />
+            <div className="w-full h-0.5 my-4 bg-white/30 rounded-full" />
+            <PlayerHand cards={playerCards} />
 
-        <Controls
-          onHit={onHit}
-          onStand={onStand}
-          onRestart={onRestart}
-          isGameOver={isGameOver}
-        />
+            <p className="text-lg mt-6 font-medium">{message}</p>
+            <div className="mt-2 mb-4 text-lg font-semibold text-yellow-300">
+              Mise actuelle : {bet}$
+            </div>
+            <Controls
+              onHit={onHit}
+              onStand={onStand}
+              isGameOver={isGameOver}
+            />
+          </>
+        )}
+        {isGameOver && showPostGameOptions && (
+          <div className="flex gap-4 mt-4">
+            <button
+              onClick={() => {
+                setHasBet(false);
+                setBet(null);
+                setShowPostGameOptions(false);
+                onRestart(); // remet tout à zéro
+              }}
+              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg shadow"
+            >
+              Retirer
+            </button>
+
+            <button
+              onClick={() => {
+                setShowPostGameOptions(false);
+                onRestart(); // recommence avec même mise
+              }}
+              className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg shadow"
+            >
+              Distribuer
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

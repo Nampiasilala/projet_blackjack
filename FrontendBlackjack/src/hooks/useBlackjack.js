@@ -15,12 +15,14 @@ function calculateScore(cards) {
   let aces = 0;
 
   cards.forEach(card => {
-    if (["J", "Q", "K"].includes(card)) score += 10;
-    else if (card === "A") {
+    const value = card.slice(0, -1); // enlève le dernier caractère (le symbole)
+
+    if (["J", "Q", "K"].includes(value)) score += 10;
+    else if (value === "A") {
       aces += 1;
       score += 11;
     } else {
-      score += parseInt(card);
+      score += parseInt(value);
     }
   });
 
