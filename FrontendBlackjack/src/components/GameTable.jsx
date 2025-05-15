@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import PlayerHand from "./PlayerHand";
 import DealerHand from "./DealerHand";
 import Controls from "./Controls";
@@ -7,6 +7,7 @@ import {
   faTrophy,
   faXmark,
   faGamepad,
+  faEquals,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
@@ -20,13 +21,20 @@ function GameTable({
   message,
 }) {
   const [localStats, setLocalStats] = useState(null);
-  const { stats, fetchStats, updateStats, handleReset } = useStats();
-  const [hasUpdatedStats, setHasUpdatedStats] = useState(false);
-  const [bet, setBet] = useState(null); // jeton sélectionné
-  const [hasBet, setHasBet] = useState(false); // indique si on a placé une mise
+  const { stats, fetchStats, updateStats } = useStats();
+  const [initialBet, setInitialBet] = useState(null);
+  const [currentBet, setCurrentBet] = useState(null);
+  const [hasBet, setHasBet] = useState(false);
   const [showPostGameOptions, setShowPostGameOptions] = useState(false);
+  const [playerBalance, setPlayerBalance] = useState(1000);
+  const hasUpdatedStatsRef = useRef(false); // REF pour éviter les doubles exécutions
 
   useEffect(() => {
+    const savedBalance = localStorage.getItem("playerBalance");
+    if (savedBalance) {
+      setPlayerBalance(parseInt(savedBalance));
+    }
+
     const loadStats = async () => {
       const userId = localStorage.getItem("userId");
       const token = localStorage.getItem("token");
@@ -47,44 +55,109 @@ function GameTable({
     setLocalStats(stats);
   }, [stats]);
 
+  const getHandValue = (hand) => {
+    let value = 0;
+    let aces = 0;
+
+    hand.forEach((card) => {
+      const rank = card.value;
+      if (["JACK", "QUEEN", "KING"].includes(rank)) {
+        value += 10;
+      } else if (rank === "ACE") {
+        value += 11;
+        aces += 1;
+      } else {
+        value += parseInt(rank);
+      }
+    });
+
+    while (value > 21 && aces > 0) {
+      value -= 10;
+      aces -= 1;
+    }
+
+    return value;
+  };
+
   useEffect(() => {
     const handleGameEnd = async () => {
       const userId = localStorage.getItem("userId");
       const token = localStorage.getItem("token");
 
-      if (!isGameOver || !message || !userId || !token || hasUpdatedStats)
+      if (!isGameOver || !message || !userId || !token || hasUpdatedStatsRef.current || !currentBet)
         return;
 
       const lowerMessage = message.toLowerCase();
-      const isVictory = lowerMessage.includes("vous gagnez");
+      const isVictory = lowerMessage.includes("vous gagnez") || lowerMessage.includes("black jack");
+      const isPush = lowerMessage.includes("égalité");
+      const isBlackjack = !isPush && playerCards.length === 2 && getHandValue(playerCards) === 21;
+
+      let newBalance = playerBalance;
 
       if (isVictory) {
-        console.log("Victoire détectée, mise à jour des stats...");
-      } else {
-        console.log("Défaite détectée...");
+        const gain = isBlackjack ? Math.floor(currentBet * 1.5) : currentBet;
+        newBalance += currentBet + gain;
+      } else if (isPush) {
+        newBalance += currentBet;
       }
 
+      setPlayerBalance(newBalance);
+      localStorage.setItem("playerBalance", newBalance.toString());
+
       try {
-        const updated = await updateStats({ isVictory, userId, token, bet });
-        if (!bet) return;
-        console.log("Stats mises à jour:", updated);
+        const updated = await updateStats({
+          isVictory,
+          isBlackjack,
+          isPush,
+          userId,
+          token,
+          bet: currentBet,
+        });
         setLocalStats(updated);
-        setHasUpdatedStats(true);
         setShowPostGameOptions(true);
+        hasUpdatedStatsRef.current = true; // Éviter les doubles appels
       } catch (error) {
         console.error("Erreur mise à jour stats:", error);
       }
     };
 
     handleGameEnd();
-  }, [isGameOver, message, updateStats, hasUpdatedStats]);
+  }, [isGameOver, message]);
 
   useEffect(() => {
     if (!isGameOver) {
-      setHasUpdatedStats(false);
+      hasUpdatedStatsRef.current = false;
       setShowPostGameOptions(false);
     }
   }, [isGameOver]);
+
+  const placeBet = (amount) => {
+    if (amount > playerBalance) {
+      alert("Solde insuffisant !");
+      return;
+    }
+
+    setInitialBet(amount);
+    setCurrentBet(amount);
+    setHasBet(true);
+
+    const newBalance = playerBalance - amount;
+    setPlayerBalance(newBalance);
+    localStorage.setItem("playerBalance", newBalance.toString());
+  };
+
+  const handleDoubleBet = () => {
+    if (initialBet > playerBalance) {
+      alert("Solde insuffisant pour doubler !");
+      return;
+    }
+
+    const newBalance = playerBalance - initialBet;
+    setPlayerBalance(newBalance);
+    localStorage.setItem("playerBalance", newBalance.toString());
+
+    setCurrentBet(initialBet * 2);
+  };
 
   return (
     <div className="m-0 relative h-screen flex items-center justify-center text-white">
@@ -102,48 +175,47 @@ function GameTable({
           <FontAwesomeIcon icon={faTrophy} className="text-green-500 mr-2" />
           Parties gagnées: {stats?.partiesGagnees ?? 0}
         </p>
-
         <p>
           <FontAwesomeIcon icon={faXmark} className="text-red-500 mr-2" />
           Parties perdues: {stats?.partiesPerdues ?? 0}
         </p>
-
+        <p>
+          <FontAwesomeIcon icon={faEquals} className="text-blue-300 mr-2" />
+          Égalités: {stats?.partiesEgalites ?? 0}
+        </p>
         <p>
           <FontAwesomeIcon icon={faGamepad} className="text-blue-500 mr-2" />
           Parties jouées: {stats?.partiesJouees ?? 0}
         </p>
       </div>
+
       <div className="absolute top-4 left-6 z-20 bg-black/50 text-white p-4 rounded-xl border border-white/20 shadow-lg backdrop-blur-md text-sm font-mono space-y-1">
-        <p>
- Pour le solde :
-        </p>
+        <p>Solde actuel: {playerBalance}$</p>
         <p>
           <FontAwesomeIcon icon={faTrophy} className="text-green-500 mr-2" />
-          Jetons gagnées: {stats?.jetonsGagnes ?? 0}
+          Jetons gagnés: {stats?.jetonsGagnes ?? 0}
         </p>
-
         <p>
           <FontAwesomeIcon icon={faXmark} className="text-red-500 mr-2" />
-          Jetons perdues: {stats?.jetonsPerdus ?? 0}
+          Jetons perdus: {stats?.jetonsPerdus ?? 0}
         </p>
       </div>
 
       <div className="relative z-10 flex flex-col items-center justify-center w-[90%] max-w-4xl p-6 rounded-2xl shadow-2xl backdrop-blur-md bg-black/50 border border-white/20">
-        <h1 className="text-2xl font-bold mb-6 font-serif tracking-wider">
-          Blackjack
-        </h1>
+        <h1 className="text-2xl font-bold mb-6 font-serif tracking-wider">Blackjack</h1>
 
-        {/* 👉 Boutons de mise visibles si aucune mise encore */}
         {!hasBet && (
           <div className="flex flex-wrap justify-center gap-4 mb-6 z-20">
             {[5, 10, 25, 50, 100].map((value) => (
               <button
                 key={value}
-                onClick={() => {
-                  setBet(value);
-                  setHasBet(true);
-                }}
-                className="px-4 py-2 rounded-full bg-purple-600 hover:bg-purple-700 text-white font-semibold shadow"
+                onClick={() => placeBet(value)}
+                disabled={value > playerBalance}
+                className={`px-4 py-2 rounded-full ${
+                  value > playerBalance
+                    ? "bg-gray-600 cursor-not-allowed opacity-50"
+                    : "bg-purple-600 hover:bg-purple-700"
+                } text-white font-semibold shadow`}
               >
                 Miser {value}$
               </button>
@@ -151,7 +223,6 @@ function GameTable({
           </div>
         )}
 
-        {/* 👉 Jeu actif après mise */}
         {hasBet && (
           <>
             <DealerHand cards={dealerCards} isGameOver={isGameOver} />
@@ -160,29 +231,36 @@ function GameTable({
 
             <p className="text-lg mt-6 font-medium">{message}</p>
             <div className="mt-2 mb-4 text-lg font-semibold text-yellow-300">
-              Mise actuelle : {bet}$
+              Mise actuelle : {currentBet}$
             </div>
-            <Controls onHit={onHit} onStand={onStand} isGameOver={isGameOver} />
+            <Controls
+              onHit={onHit}
+              onStand={onStand}
+              isGameOver={isGameOver}
+              bet={initialBet}
+              onDoubleBet={handleDoubleBet}
+            />
           </>
         )}
+
         {isGameOver && showPostGameOptions && (
           <div className="flex gap-4 mt-4">
             <button
               onClick={() => {
                 setHasBet(false);
-                setBet(null);
+                setInitialBet(null);
+                setCurrentBet(null);
                 setShowPostGameOptions(false);
-                onRestart(); // remet tout à zéro
+                onRestart();
               }}
               className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg shadow"
             >
               Retirer
             </button>
-
             <button
               onClick={() => {
                 setShowPostGameOptions(false);
-                onRestart(); // recommence avec même mise
+                onRestart();
               }}
               className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg shadow"
             >

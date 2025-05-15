@@ -15,7 +15,7 @@ function calculateScore(cards) {
   let aces = 0;
 
   cards.forEach(card => {
-    const value = card.slice(0, -1); // enlève le dernier caractère (le symbole)
+    const value = card.slice(0, -1); // enlève le symbole
 
     if (["J", "Q", "K"].includes(value)) score += 10;
     else if (value === "A") {
@@ -26,7 +26,6 @@ function calculateScore(cards) {
     }
   });
 
-  // Ajuster les As si nécessaire
   while (score > 21 && aces > 0) {
     score -= 10;
     aces--;
@@ -44,7 +43,6 @@ export default function useBlackjack() {
   const startGame = () => {
     const newPlayerCards = [getRandomCard(deck), getRandomCard(deck)];
     const newDealerCards = [getRandomCard(deck), getRandomCard(deck)];
-
 
     setPlayerCards(newPlayerCards);
     setDealerCards(newDealerCards);
@@ -90,6 +88,22 @@ export default function useBlackjack() {
     setIsGameOver(true);
   };
 
+  const onDoubleBet = () => {
+    if (isGameOver) return;
+
+    const newCard = getRandomCard(deck);
+    const newHand = [...playerCards, newCard];
+    setPlayerCards(newHand);
+
+    const score = calculateScore(newHand);
+    if (score > 21) {
+      setMessage("Vous avez doublé... mais dépassé 21 ! Perdu !");
+      setIsGameOver(true);
+    } else {
+      onStand();
+    }
+  };
+
   const onRestart = () => {
     startGame();
   };
@@ -105,6 +119,7 @@ export default function useBlackjack() {
     message,
     onHit,
     onStand,
+    onDoubleBet,
     onRestart,
   };
 }

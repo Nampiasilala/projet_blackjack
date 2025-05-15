@@ -5,6 +5,8 @@ const StatsContext = createContext();
 
 export function StatsProvider({ children }) {
   const [stats, setStats] = useState(null);
+  // Ajouter un state pour suivre la série de victoires actuelle
+  const [currentWinStreak, setCurrentWinStreak] = useState(0);
 
   const fetchStats = async (userId, token) => {
     try {
@@ -26,16 +28,16 @@ export function StatsProvider({ children }) {
 
   const resetStats = async (userId, token) => {
     try {
-      // Données par défaut pour réinitialiser les statistiques
       const resetData = {
         partiesJouees: 0,
         partiesGagnees: 0,
         partiesPerdues: 0,
+        partiesEgalites: 0,
         jetonsGagnes: 0,
+        jetonsPerdus: 0,
         meilleureSerieVictoires: 0,
       };
 
-      // Envoi de la requête PUT pour réinitialiser les statistiques de l'utilisateur
       const { data: newStats } = await axios.put(
         `http://localhost:8080/api/statistiques/${userId}`,
         resetData,
@@ -47,8 +49,9 @@ export function StatsProvider({ children }) {
         }
       );
 
-      // Mise à jour des statistiques dans le state
       setStats(newStats);
+      // Réinitialiser la série de victoires
+      setCurrentWinStreak(0);
       return newStats;
     } catch (error) {
       console.error("Erreur lors de la réinitialisation des stats :", error);
@@ -56,29 +59,43 @@ export function StatsProvider({ children }) {
     }
   };
 
-  const updateStats = async ({ isVictory, userId, token, bet }) => {
+  const updateStats = async ({ isVictory, isBlackjack, isPush, userId, token, bet }) => {
     try {
       const { data: currentStats } = await axios.get(
         `http://localhost:8080/api/statistiques/${userId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
+      // Mettre à jour la série de victoires actuelle
+      let newWinStreak = currentWinStreak;
+      if (isVictory && !isPush) {
+        newWinStreak += 1;
+      } else if (!isPush) {
+        // Réinitialiser la série en cas de défaite
+        newWinStreak = 0;
+      }
+      
+      // Mettre à jour le state de la série de victoires
+      setCurrentWinStreak(newWinStreak);
+
       const updatedData = {
         partiesJouees: currentStats.partiesJouees + 1,
-        partiesGagnees: currentStats.partiesGagnees + (isVictory ? 1 : 0),
-        partiesPerdues: currentStats.partiesPerdues + (isVictory ? 0 : 1),
+        partiesGagnees: currentStats.partiesGagnees + (isVictory && !isPush ? 1 : 0),
+        partiesPerdues: currentStats.partiesPerdues + (!isVictory && !isPush ? 1 : 0),
+        partiesEgalites: currentStats.partiesEgalites + (isPush ? 1 : 0),
+        // Correction du calcul des jetons gagnés
         jetonsGagnes: isVictory
-          ? currentStats.jetonsGagnes + bet
+          ? currentStats.jetonsGagnes + (isBlackjack ? Math.floor(bet * 1.5) : bet)
           : currentStats.jetonsGagnes,
-        jetonsPerdus: isVictory
-          ? currentStats.jetonsPerdus
-          : (currentStats.jetonsPerdus || 0) + bet,
-        meilleureSerieVictoires: isVictory
-          ? Math.max(
-              currentStats.meilleureSerieVictoires || 0,
-              (currentStats.currentWinStreak || 0) + 1
-            )
-          : currentStats.meilleureSerieVictoires || 0,
+        // Correction du calcul des jetons perdus
+        jetonsPerdus: !isVictory && !isPush
+          ? (currentStats.jetonsPerdus || 0) + bet
+          : currentStats.jetonsPerdus,
+        // Correction de la meilleure série de victoires
+        meilleureSerieVictoires: Math.max(
+          currentStats.meilleureSerieVictoires || 0,
+          newWinStreak
+        ),
       };
 
       const { data: newStats } = await axios.put(
@@ -102,7 +119,7 @@ export function StatsProvider({ children }) {
 
   return (
     <StatsContext.Provider
-      value={{ stats, fetchStats, updateStats, resetStats }}
+      value={{ stats, currentWinStreak, fetchStats, updateStats, resetStats }}
     >
       {children}
     </StatsContext.Provider>
