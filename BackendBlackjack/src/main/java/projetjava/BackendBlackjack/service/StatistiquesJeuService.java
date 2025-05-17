@@ -14,12 +14,10 @@ public class StatistiquesJeuService {
     @Autowired
     private StatistiquesJeuRepository statistiquesJeuRepository;
 
-    // Méthode pour créer des statistiques
     public StatistiquesJeu creerStatistiques(StatistiquesJeu statistiquesJeu) {
         return statistiquesJeuRepository.save(statistiquesJeu);
     }
 
-    // ✅ Méthode pour mettre à jour des statistiques avec flush et transaction
     @Transactional
     public StatistiquesJeu updateStatistiques(StatistiquesJeu statistiquesJeu) {
         StatistiquesJeu updatedStats = statistiquesJeuRepository.save(statistiquesJeu);
@@ -27,12 +25,10 @@ public class StatistiquesJeuService {
         return updatedStats;
     }
 
-    // Méthode pour supprimer des statistiques par ID
     public void deleteStatistiques(Long id) {
         statistiquesJeuRepository.deleteById(id);
     }
 
-    // Méthode pour récupérer les statistiques d'un utilisateur par ID
     public Optional<StatistiquesJeu> getStatistiquesParUtilisateurId(Long id) {
         return statistiquesJeuRepository.findByUtilisateurId(id);
     }

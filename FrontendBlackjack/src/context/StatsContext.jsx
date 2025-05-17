@@ -59,7 +59,14 @@ export function StatsProvider({ children }) {
     }
   };
 
-  const updateStats = async ({ isVictory, isBlackjack, isPush, userId, token, bet }) => {
+  const updateStats = async ({
+    isVictory,
+    isBlackjack,
+    isPush,
+    userId,
+    token,
+    bet,
+  }) => {
     try {
       const { data: currentStats } = await axios.get(
         `http://localhost:8080/api/statistiques/${userId}`,
@@ -74,23 +81,27 @@ export function StatsProvider({ children }) {
         // Réinitialiser la série en cas de défaite
         newWinStreak = 0;
       }
-      
+
       // Mettre à jour le state de la série de victoires
       setCurrentWinStreak(newWinStreak);
 
       const updatedData = {
         partiesJouees: currentStats.partiesJouees + 1,
-        partiesGagnees: currentStats.partiesGagnees + (isVictory && !isPush ? 1 : 0),
-        partiesPerdues: currentStats.partiesPerdues + (!isVictory && !isPush ? 1 : 0),
+        partiesGagnees:
+          currentStats.partiesGagnees + (isVictory && !isPush ? 1 : 0),
+        partiesPerdues:
+          currentStats.partiesPerdues + (!isVictory && !isPush ? 1 : 0),
         partiesEgalites: currentStats.partiesEgalites + (isPush ? 1 : 0),
-        // Correction du calcul des jetons gagnés
+        // Calcul correct des jetons gagnés (uniquement le profit, pas la mise initiale)
         jetonsGagnes: isVictory
-          ? currentStats.jetonsGagnes + (isBlackjack ? Math.floor(bet * 1.5) : bet)
+          ? currentStats.jetonsGagnes +
+            (isBlackjack ? Math.floor(bet * 1.5) : bet)
           : currentStats.jetonsGagnes,
-        // Correction du calcul des jetons perdus
-        jetonsPerdus: !isVictory && !isPush
-          ? (currentStats.jetonsPerdus || 0) + bet
-          : currentStats.jetonsPerdus,
+        // Correction pour ne comptabiliser la perte que si le joueur perd réellement
+        jetonsPerdus:
+          !isVictory && !isPush
+            ? currentStats.jetonsPerdus + bet
+            : currentStats.jetonsPerdus,
         // Correction de la meilleure série de victoires
         meilleureSerieVictoires: Math.max(
           currentStats.meilleureSerieVictoires || 0,

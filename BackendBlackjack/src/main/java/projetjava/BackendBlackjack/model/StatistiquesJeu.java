@@ -23,6 +23,9 @@ public class StatistiquesJeu {
     @Column(name = "parties_perdues")
     private int partiesPerdues = 0;
 
+    @Column(name = "parties_egalites")
+    private int partiesEgalites = 0;
+
     @Column(name = "jetons_gagnes")
     private int jetonsGagnes = 0;
 
@@ -72,6 +75,14 @@ public class StatistiquesJeu {
 
     public void setPartiesPerdues(int partiesPerdues) {
         this.partiesPerdues = partiesPerdues;
+    }
+
+    public int getPartiesEgalites() {
+        return partiesEgalites;
+    }
+
+    public void setPartiesEgalites(int partiesEgalites) {
+        this.partiesEgalites = partiesEgalites;
     }
 
     public int getJetonsGagnes() {

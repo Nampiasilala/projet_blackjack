@@ -104,12 +104,14 @@ function GameTable({
 
       let newBalance = playerBalance;
 
+      // Calcul correct du gain
       if (isVictory) {
         const gain = isBlackjack ? Math.floor(currentBet * 1.5) : currentBet;
-        newBalance += currentBet + gain;
+        newBalance += currentBet + gain; // La mise initiale + le gain
       } else if (isPush) {
-        newBalance += currentBet;
+        newBalance += currentBet; // Remboursement de la mise
       }
+      // En cas de défaite, la mise a déjà été déduite du solde
 
       setPlayerBalance(newBalance);
       localStorage.setItem("playerBalance", newBalance.toString());
@@ -189,10 +191,10 @@ function GameTable({
           <FontAwesomeIcon icon={faXmark} className="text-red-500 mr-2" />
           Parties perdues: {stats?.partiesPerdues ?? 0}
         </p>
-        {/* <p>
+        <p>
           <FontAwesomeIcon icon={faEquals} className="text-blue-300 mr-2" />
           Égalités: {stats?.partiesEgalites ?? 0}
-        </p> */}
+        </p>
         <p>
           <FontAwesomeIcon icon={faGamepad} className="text-blue-500 mr-2" />
           Parties jouées: {stats?.partiesJouees ?? 0}
@@ -200,7 +202,7 @@ function GameTable({
       </div>
 
       <div className="absolute top-4 left-6 z-20 bg-black/50 text-white p-4 rounded-xl border border-white/20 shadow-lg backdrop-blur-md text-sm font-mono space-y-1">
-        {/* <p>Solde actuel: {playerBalance}$</p> */}
+        <p>Solde actuel: {playerBalance}$</p>
         <p>
           <FontAwesomeIcon icon={faTrophy} className="text-green-500 mr-2" />
           Jetons gagnés: {stats?.jetonsGagnes ?? 0}

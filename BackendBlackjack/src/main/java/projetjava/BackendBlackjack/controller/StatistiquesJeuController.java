@@ -39,26 +39,22 @@ public class StatistiquesJeuController {
             @PathVariable Long userId,
             @RequestBody StatistiquesJeu newStats) {
 
-        // 1. Vérifier que l'utilisateur existe
         Utilisateurs user = utilisateurRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilisateur non trouvé"));
 
-        // 2. Récupérer ou créer les stats
         StatistiquesJeu existingStats = statistiquesJeuService
                 .getStatistiquesParUtilisateurId(userId)
                 .orElse(new StatistiquesJeu());
 
-        // 3. Mettre à jour TOUS les champs sans exception
         existingStats.setPartiesJouees(newStats.getPartiesJouees());
         existingStats.setPartiesGagnees(newStats.getPartiesGagnees());
         existingStats.setPartiesPerdues(newStats.getPartiesPerdues());
+        existingStats.setPartiesEgalites(newStats.getPartiesEgalites());
         existingStats.setJetonsGagnes(newStats.getJetonsGagnes());
         existingStats.setJetonsPerdus(newStats.getJetonsPerdus());
         existingStats.setMeilleureSerieVictoires(newStats.getMeilleureSerieVictoires());
-        // 4. Toujours maintenir la relation utilisateur
         existingStats.setUtilisateur(user);
 
-        // 5. Sauvegarder
         StatistiquesJeu updatedStats = statistiquesJeuService.updateStatistiques(existingStats);
 
         return ResponseEntity.ok(updatedStats);

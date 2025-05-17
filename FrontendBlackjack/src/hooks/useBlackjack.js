@@ -1,9 +1,23 @@
 import { useState, useEffect } from "react";
 
 const suits = ["♠", "♣", "♥", "♦"];
-const values = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
+const values = [
+  "A",
+  "2",
+  "3",
+  "4",
+  "5",
+  "6",
+  "7",
+  "8",
+  "9",
+  "10",
+  "J",
+  "Q",
+  "K",
+];
 
-const deck = suits.flatMap(suit => values.map(value => value + suit));
+const deck = suits.flatMap((suit) => values.map((value) => value + suit));
 
 function getRandomCard(deck) {
   const index = Math.floor(Math.random() * deck.length);
@@ -14,7 +28,7 @@ function calculateScore(cards) {
   let score = 0;
   let aces = 0;
 
-  cards.forEach(card => {
+  cards.forEach((card) => {
     const value = card.slice(0, -1); // enlève le symbole
 
     if (["J", "Q", "K"].includes(value)) score += 10;
@@ -46,8 +60,24 @@ export default function useBlackjack() {
 
     setPlayerCards(newPlayerCards);
     setDealerCards(newDealerCards);
-    setIsGameOver(false);
-    setMessage("");
+
+    // Vérification du Blackjack
+    const playerScore = calculateScore(newPlayerCards);
+    const dealerScore = calculateScore(newDealerCards);
+
+    if (playerScore === 21 && dealerScore === 21) {
+      setMessage("Double Blackjack ! Égalité !");
+      setIsGameOver(true);
+    } else if (playerScore === 21) {
+      setMessage("Blackjack ! Vous gagnez ! 🎉");
+      setIsGameOver(true);
+    } else if (dealerScore === 21) {
+      setMessage("Blackjack du croupier ! Vous perdez 😢");
+      setIsGameOver(true);
+    } else {
+      setMessage("");
+      setIsGameOver(false);
+    }
   };
 
   const onHit = () => {
@@ -75,7 +105,9 @@ export default function useBlackjack() {
     const playerScore = calculateScore(playerCards);
 
     let resultMessage = "";
-    if (dealerScore > 21 || playerScore > dealerScore) {
+    if (dealerScore > 21) {
+      resultMessage = "Croupier dépasse 21. Vous gagnez ! 🎉";
+    } else if (playerScore > dealerScore) {
       resultMessage = "Vous gagnez ! 🎉";
     } else if (dealerScore === playerScore) {
       resultMessage = "Égalité !";
