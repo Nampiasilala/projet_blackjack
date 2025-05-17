@@ -29,6 +29,33 @@ function GameTable({
   const [playerBalance, setPlayerBalance] = useState(1000);
   const hasUpdatedStatsRef = useRef(false); // REF pour éviter les doubles exécutions
 
+  const handleRestartWithBet = () => {
+    if (initialBet === null || initialBet <= 0) {
+      alert("Aucune mise précédente !");
+      return;
+    }
+
+    const newBalance = playerBalance - initialBet;
+
+    if (newBalance < 0) {
+      alert("Solde insuffisant pour rejouer !");
+      return;
+    }
+
+    // Mise à jour du solde et stockage local
+    setPlayerBalance(newBalance);
+    localStorage.setItem("playerBalance", newBalance.toString());
+
+    // Réappliquer la mise précédente
+    setCurrentBet(initialBet);
+    setHasBet(true);
+    setShowPostGameOptions(false);
+
+    // Redémarrer la partie
+    onRestart();
+  };
+
+
   useEffect(() => {
     const savedBalance = localStorage.getItem("playerBalance");
     if (savedBalance) {
@@ -89,10 +116,9 @@ function GameTable({
         !message ||
         !userId ||
         !token ||
-        hasUpdatedStatsRef.current ||
-        !currentBet
-      )
-        return;
+        hasUpdatedStatsRef.current
+      ) return;
+      
 
       const lowerMessage = message.toLowerCase();
       const isVictory =
@@ -102,39 +128,44 @@ function GameTable({
       const isBlackjack =
         !isPush && playerCards.length === 2 && getHandValue(playerCards) === 21;
 
-      let newBalance = playerBalance;
+        let newBalance = playerBalance;
 
-      // Calcul correct du gain
-      if (isVictory) {
-        const gain = isBlackjack ? Math.floor(currentBet * 1.5) : currentBet;
-        newBalance += currentBet + gain; // La mise initiale + le gain
-      } else if (isPush) {
-        newBalance += currentBet; // Remboursement de la mise
-      }
-      // En cas de défaite, la mise a déjà été déduite du solde
-
-      setPlayerBalance(newBalance);
-      localStorage.setItem("playerBalance", newBalance.toString());
-
-      try {
-        const updated = await updateStats({
-          isVictory,
-          isBlackjack,
-          isPush,
-          userId,
-          token,
-          bet: currentBet,
-        });
-        setLocalStats(updated);
-        setShowPostGameOptions(true);
-        hasUpdatedStatsRef.current = true; // Éviter les doubles appels
-      } catch (error) {
-        console.error("Erreur mise à jour stats:", error);
-      }
+        if (isVictory) {
+          const gain = isBlackjack ? Math.floor((currentBet || 0) * 2.5) : (currentBet || 0) * 2;
+          newBalance += gain;
+        } else if (isPush) {
+          newBalance += currentBet || 0;
+        }        
+        
+        setPlayerBalance(newBalance);
+        localStorage.setItem("playerBalance", newBalance.toString());
+        
+        try {
+          const updated = await updateStats({
+            isVictory,
+            isBlackjack,
+            isPush,
+            userId,
+            token,
+            bet: currentBet || 0,
+          });
+          setLocalStats(updated);
+        } catch (error) {
+          console.error("Erreur mise à jour stats:", error);
+        } finally {
+          setShowPostGameOptions(true);
+          hasUpdatedStatsRef.current = true;
+        }        
     };
 
     handleGameEnd();
   }, [isGameOver, message]);
+
+  useEffect(() => {
+    console.log("isGameOver:", isGameOver);
+    console.log("showPostGameOptions:", showPostGameOptions);
+  }, [isGameOver, showPostGameOptions]);
+   
 
   useEffect(() => {
     if (!isGameOver) {
@@ -286,10 +317,7 @@ function GameTable({
               Retirer
             </button>
             <button
-              onClick={() => {
-                setShowPostGameOptions(false);
-                onRestart();
-              }}
+              onClick={handleRestartWithBet}
               className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg shadow"
             >
               Distribuer
