@@ -24,15 +24,20 @@ public class Utilisateurs {
     @Column(name = "password_hash")
     private String passwordHash;
 
+    @Column(nullable = false)
+    private Double balance = 1000.0; // solde initial par défaut
+
     // Getters
     public Long getId() { return id; }
     public String getNom() { return nom; }
     public String getEmail() { return email; }
     public String getPasswordHash() { return passwordHash; }
+    public Double getBalance() { return balance;}
 
     // Setters
     public void setId(Long id) { this.id = id; }
     public void setNom(String nom) { this.nom = nom; }
     public void setEmail(String email) { this.email = email; }
     public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
+    public void setBalance(Double balance) { this.balance = balance;}
 }
