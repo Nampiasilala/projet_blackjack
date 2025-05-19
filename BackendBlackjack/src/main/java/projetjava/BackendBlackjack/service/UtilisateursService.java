@@ -1,4 +1,5 @@
 package projetjava.BackendBlackjack.service;
+import org.springframework.transaction.annotation.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -59,5 +60,11 @@ public class UtilisateursService {
     public List<Utilisateurs> getAllUtilisateurs() {
         return utilisateurRepository.findAll();
     }
-    
+
+    @Transactional
+    public Utilisateurs updateUserBalance(Long id, Double newBalance) {
+        Utilisateurs utilisateur = getUtilisateurById(id);
+        utilisateur.setBalance(newBalance);
+        return utilisateurRepository.save(utilisateur);
+    }
 }

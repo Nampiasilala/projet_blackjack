@@ -8,6 +8,7 @@ import projetjava.BackendBlackjack.dto.UserCreationDTO;
 import projetjava.BackendBlackjack.model.Utilisateurs;
 import projetjava.BackendBlackjack.service.UtilisateursService;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/utilisateurs")
@@ -38,5 +39,20 @@ public class UtilisateurController {
         List<Utilisateurs> utilisateurs = utilisateursService.getAllUtilisateurs();
         return ResponseEntity.ok(utilisateurs);
     }
+
+    @PutMapping("/{id}/balance")
+    public ResponseEntity<Utilisateurs> updateUserBalance(
+            @PathVariable Long id,
+            @RequestBody Map<String, Double> balanceMap) {
+        
+        Double newBalance = balanceMap.get("balance");
+        if (newBalance == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        
+        Utilisateurs utilisateur = utilisateursService.updateUserBalance(id, newBalance);
+        return ResponseEntity.ok(utilisateur);
+    }
+
 
 }

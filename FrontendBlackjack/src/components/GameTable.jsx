@@ -10,6 +10,7 @@ import {
   faEquals,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import axios from "axios"; // Ajout de l'import pour axios
 
 function GameTable({
   playerCards,
@@ -27,56 +28,42 @@ function GameTable({
   const [hasBet, setHasBet] = useState(false);
   const [showPostGameOptions, setShowPostGameOptions] = useState(false);
   const [playerBalance, setPlayerBalance] = useState(1000);
-  const hasUpdatedStatsRef = useRef(false); // REF pour éviter les doubles exécutions
+  const hasUpdatedStatsRef = useRef(false);
+  const hasUpdatedBalanceRef = useRef(false); // New ref to track balance updates
+  const userId = useRef(localStorage.getItem("userId"));
+  const token = useRef(localStorage.getItem("token"));
 
-  const handleRestartWithBet = () => {
-    if (initialBet === null || initialBet <= 0) {
-      alert("Aucune mise précédente !");
-      return;
-    }
-
-    const newBalance = playerBalance - initialBet;
-
-    if (newBalance < 0) {
-      alert("Solde insuffisant pour rejouer !");
-      return;
-    }
-
-    // Mise à jour du solde et stockage local
-    setPlayerBalance(newBalance);
-    localStorage.setItem("playerBalance", newBalance.toString());
-
-    // Réappliquer la mise précédente
-    setCurrentBet(initialBet);
-    setHasBet(true);
-    setShowPostGameOptions(false);
-
-    // Redémarrer la partie
-    onRestart();
-  };
-
-
+  // Charger le solde depuis la base de données au démarrage
   useEffect(() => {
-    const savedBalance = localStorage.getItem("playerBalance");
-    if (savedBalance) {
-      setPlayerBalance(parseInt(savedBalance));
-    }
-
-    const loadStats = async () => {
-      const userId = localStorage.getItem("userId");
-      const token = localStorage.getItem("token");
-      if (!userId || !token) return;
+    const loadUserData = async () => {
+      if (!userId.current || !token.current) return;
 
       try {
-        const fetched = await fetchStats(userId, token);
-        setLocalStats(fetched);
+        // Récupérer le solde de l'utilisateur depuis l'API
+        const response = await axios.get(
+          `http://localhost:8080/api/utilisateurs/${userId.current}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token.current}`,
+            },
+          }
+        );
+        
+        if (response.data && response.data.balance) {
+          setPlayerBalance(response.data.balance);
+          // Mettre à jour également le localStorage
+          localStorage.setItem("playerBalance", response.data.balance.toString());
+        }
+
+        // Charger aussi les stats
+        await fetchStats(userId.current, token.current);
       } catch (error) {
-        console.error("Erreur lors du chargement des stats :", error);
+        console.error("Erreur lors du chargement des données utilisateur:", error);
       }
     };
 
-    loadStats();
-  }, []);
+    loadUserData();
+  }, []); // Empty dependency array to run only once on mount
 
   useEffect(() => {
     setLocalStats(stats);
@@ -106,20 +93,40 @@ function GameTable({
     return value;
   };
 
+  // Mettre à jour le solde dans la base de données
+  const updateBalanceInDB = async (userId, newBalance) => {
+    try {
+      const response = await axios.put(
+        `http://localhost:8080/api/utilisateurs/${userId}/balance`,
+        { balance: newBalance },
+        {
+          headers: {
+            Authorization: `Bearer ${token.current}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      console.log('Solde mis à jour avec succès:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour du solde:', error);
+      throw error;
+    }
+  };
+
   useEffect(() => {
     const handleGameEnd = async () => {
-      const userId = localStorage.getItem("userId");
-      const token = localStorage.getItem("token");
-
       if (
         !isGameOver ||
         !message ||
-        !userId ||
-        !token ||
-        hasUpdatedStatsRef.current
-      ) return;
-      
-
+        !userId.current ||
+        !token.current ||
+        hasUpdatedStatsRef.current ||
+        hasUpdatedBalanceRef.current || // Check if balance has already been updated
+        !currentBet
+      )
+        return;
+  
       const lowerMessage = message.toLowerCase();
       const isVictory =
         lowerMessage.includes("vous gagnez") ||
@@ -127,54 +134,62 @@ function GameTable({
       const isPush = lowerMessage.includes("égalité");
       const isBlackjack =
         !isPush && playerCards.length === 2 && getHandValue(playerCards) === 21;
-
-        let newBalance = playerBalance;
-
-        if (isVictory) {
-          const gain = isBlackjack ? Math.floor((currentBet || 0) * 2.5) : (currentBet || 0) * 2;
-          newBalance += gain;
-        } else if (isPush) {
-          newBalance += currentBet || 0;
-        }        
-        
-        setPlayerBalance(newBalance);
-        localStorage.setItem("playerBalance", newBalance.toString());
-        
-        try {
-          const updated = await updateStats({
-            isVictory,
-            isBlackjack,
-            isPush,
-            userId,
-            token,
-            bet: currentBet || 0,
-          });
-          setLocalStats(updated);
-        } catch (error) {
-          console.error("Erreur mise à jour stats:", error);
-        } finally {
-          setShowPostGameOptions(true);
-          hasUpdatedStatsRef.current = true;
-        }        
+  
+      let newBalance = playerBalance;
+  
+      // Calcul correct du gain
+      if (isVictory) {
+        const gain = isBlackjack ? Math.floor(currentBet * 1.5) : currentBet;
+        newBalance += currentBet + gain; // La mise initiale + le gain
+      } else if (isPush) {
+        newBalance += currentBet; // Remboursement de la mise
+      }
+      // En cas de défaite, la mise a déjà été déduite du solde
+  
+      // Set flags before async operations to prevent race conditions
+      hasUpdatedBalanceRef.current = true;
+      hasUpdatedStatsRef.current = true;
+      
+      setPlayerBalance(newBalance);
+      localStorage.setItem("playerBalance", newBalance.toString());
+      
+      try {
+        // Mise à jour du solde dans la base de données
+        await updateBalanceInDB(userId.current, newBalance);
+  
+        const updated = await updateStats({
+          isVictory,
+          isBlackjack,
+          isPush,
+          userId: userId.current,
+          token: token.current,
+          bet: currentBet,
+        });
+        setLocalStats(updated);
+        setShowPostGameOptions(true);
+      } catch (error) {
+        console.error("Erreur mise à jour stats ou balance:", error);
+        // Reset flags on error to potentially retry
+        hasUpdatedBalanceRef.current = false;
+        hasUpdatedStatsRef.current = false;
+      }
     };
-
+  
     handleGameEnd();
-  }, [isGameOver, message]);
-
-  useEffect(() => {
-    console.log("isGameOver:", isGameOver);
-    console.log("showPostGameOptions:", showPostGameOptions);
-  }, [isGameOver, showPostGameOptions]);
-   
+  }, [isGameOver, message]);  // Reduced dependencies to minimize re-renders
 
   useEffect(() => {
     if (!isGameOver) {
       hasUpdatedStatsRef.current = false;
+      hasUpdatedBalanceRef.current = false; // Reset balance update flag when game is not over
       setShowPostGameOptions(false);
+    } else {
+      // Forcer l'affichage des options en fin de partie
+      setShowPostGameOptions(true);
     }
   }, [isGameOver]);
 
-  const placeBet = (amount) => {
+  const placeBet = async (amount) => {
     if (amount > playerBalance) {
       alert("Solde insuffisant !");
       return;
@@ -187,9 +202,20 @@ function GameTable({
     const newBalance = playerBalance - amount;
     setPlayerBalance(newBalance);
     localStorage.setItem("playerBalance", newBalance.toString());
+    
+    // Mise à jour du solde dans la base de données
+    try {
+      await updateBalanceInDB(userId.current, newBalance);
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour du solde:", error);
+      // Restore balance on error
+      setPlayerBalance(playerBalance);
+      localStorage.setItem("playerBalance", playerBalance.toString());
+      alert("Erreur lors de la mise à jour du solde. Veuillez réessayer.");
+    }
   };
 
-  const handleDoubleBet = () => {
+  const handleDoubleBet = async () => {
     if (initialBet > playerBalance) {
       alert("Solde insuffisant pour doubler !");
       return;
@@ -198,8 +224,58 @@ function GameTable({
     const newBalance = playerBalance - initialBet;
     setPlayerBalance(newBalance);
     localStorage.setItem("playerBalance", newBalance.toString());
+    
+    try {
+      // Mise à jour du solde dans la base de données
+      await updateBalanceInDB(userId.current, newBalance);
+      setCurrentBet(initialBet * 2);
+      onHit(); // Tirer une carte automatiquement après avoir doublé
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour du solde:", error);
+      // Restore balance on error
+      setPlayerBalance(playerBalance);
+      localStorage.setItem("playerBalance", playerBalance.toString());
+      alert("Erreur lors de la mise à jour du solde. Veuillez réessayer.");
+    }
+  };
 
-    setCurrentBet(initialBet * 2);
+  // Gérer le bouton "Même mise"
+  const handleMemeMise = async () => {
+    if (initialBet === null || initialBet <= 0) {
+      alert("Aucune mise précédente !");
+      return;
+    }
+
+    const newBalance = playerBalance - initialBet;
+    if (newBalance < 0) {
+      alert("Solde insuffisant pour rejouer !");
+      return;
+    }
+
+    try {
+      // Met à jour le solde et stocke dans le localStorage
+      setPlayerBalance(newBalance);
+      localStorage.setItem("playerBalance", newBalance.toString());
+      
+      // Mise à jour du solde dans la base de données
+      await updateBalanceInDB(userId.current, newBalance);
+  
+      // Réapplique la mise précédente
+      setCurrentBet(initialBet);
+      setHasBet(true);
+      setShowPostGameOptions(false);
+      hasUpdatedStatsRef.current = false;
+      hasUpdatedBalanceRef.current = false;
+  
+      // Redémarre la partie
+      onRestart();
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour du solde:", error);
+      // Restore balance on error
+      setPlayerBalance(playerBalance);
+      localStorage.setItem("playerBalance", playerBalance.toString());
+      alert("Erreur lors de la mise à jour du solde. Veuillez réessayer.");
+    }
   };
 
   return (
@@ -265,12 +341,12 @@ function GameTable({
                   onClick={() => placeBet(value)}
                   disabled={value > playerBalance}
                   className={`relative w-16 aspect-square rounded-full text-white font-bold text-lg shadow-lg border-4 border-white 
-          ${
-            value > playerBalance
-              ? "bg-gray-600 cursor-not-allowed opacity-50"
-              : `${colors[value]} hover:brightness-110`
-          }
-        `}
+                    ${
+                      value > playerBalance
+                        ? "bg-gray-600 cursor-not-allowed opacity-50"
+                        : `${colors[value]} hover:brightness-110`
+                    }
+                  `}
                 >
                   <span className="absolute inset-0 flex items-center justify-center">
                     {value}
@@ -298,29 +374,33 @@ function GameTable({
               isGameOver={isGameOver}
               bet={initialBet}
               onDoubleBet={handleDoubleBet}
+              playerBalance={playerBalance}
             />
           </>
         )}
 
-        {isGameOver && showPostGameOptions && (
+        {isGameOver && (
           <div className="flex gap-4 mt-4">
             <button
               onClick={() => {
+                // Réinitialisation complète pour retourner à la sélection des jetons
                 setHasBet(false);
                 setInitialBet(null);
                 setCurrentBet(null);
                 setShowPostGameOptions(false);
+                hasUpdatedStatsRef.current = false;
                 onRestart();
               }}
               className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg shadow"
             >
-              Retirer
+              Nouvelle mise
             </button>
             <button
-              onClick={handleRestartWithBet}
+              onClick={handleMemeMise}
               className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg shadow"
+              disabled={playerBalance < initialBet}
             >
-              Distribuer
+              Même mise
             </button>
           </div>
         )}

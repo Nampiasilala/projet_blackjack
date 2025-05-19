@@ -57,14 +57,14 @@ export default function useBlackjack() {
   const startGame = () => {
     const newPlayerCards = [getRandomCard(deck), getRandomCard(deck)];
     const newDealerCards = [getRandomCard(deck), getRandomCard(deck)];
-
+  
     setPlayerCards(newPlayerCards);
     setDealerCards(newDealerCards);
-
+    
     // Vérification du Blackjack
     const playerScore = calculateScore(newPlayerCards);
     const dealerScore = calculateScore(newDealerCards);
-
+    
     if (playerScore === 21 && dealerScore === 21) {
       setMessage("Double Blackjack ! Égalité !");
       setIsGameOver(true);
@@ -79,6 +79,8 @@ export default function useBlackjack() {
       setIsGameOver(false);
     }
   };
+  
+  
 
   const onHit = () => {
     if (isGameOver) return;
@@ -96,14 +98,14 @@ export default function useBlackjack() {
   const onStand = () => {
     let newDealerCards = [...dealerCards];
     let dealerScore = calculateScore(newDealerCards);
-
+  
     while (dealerScore < 17) {
       newDealerCards.push(getRandomCard(deck));
       dealerScore = calculateScore(newDealerCards);
     }
-
+  
     const playerScore = calculateScore(playerCards);
-
+  
     let resultMessage = "";
     if (dealerScore > 21) {
       resultMessage = "Croupier dépasse 21. Vous gagnez ! 🎉";
@@ -114,11 +116,12 @@ export default function useBlackjack() {
     } else {
       resultMessage = "Croupier gagne ! 😢";
     }
-
+  
     setDealerCards(newDealerCards);
     setMessage(resultMessage);
     setIsGameOver(true);
   };
+  
 
   const onDoubleBet = () => {
     if (isGameOver) return;
@@ -137,8 +140,16 @@ export default function useBlackjack() {
   };
 
   const onRestart = () => {
+    // Assurez-vous que les cartes sont réinitialisées
+    setPlayerCards([]);
+    setDealerCards([]);
+    setIsGameOver(false);
+    setMessage("");
+    
+    // Puis lancez une nouvelle partie
     startGame();
   };
+  
 
   useEffect(() => {
     startGame();
