@@ -2,12 +2,14 @@ package projetjava.BackendBlackjack.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import projetjava.BackendBlackjack.dto.GameLogDTO;
 import projetjava.BackendBlackjack.model.GameLog;
 import projetjava.BackendBlackjack.model.Utilisateurs;
 import projetjava.BackendBlackjack.repository.GameLogRepository;
 import projetjava.BackendBlackjack.repository.UtilisateurRepository;
-import java.util.Optional;
+
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class GameLogService {
@@ -18,9 +20,21 @@ public class GameLogService {
     @Autowired
     private UtilisateurRepository utilisateurRepository;
 
-    public List<GameLog> getGameLogsByUserId(Long userId) {
-        return gameLogRepository.findByUtilisateur_Id(userId);
+    public List<GameLogDTO> getGameLogsByUserId(Long userId) {
+        List<GameLog> logs = gameLogRepository.findByUtilisateur_Id(userId);
+
+        // Conversion vers DTO pour éviter la boucle infinie de sérialisation
+        return logs.stream()
+                .map(log -> new GameLogDTO(
+                        log.getMise(),
+                        log.getGain(),
+                        log.getResultat(),
+                        log.getBalanceApres(),
+                        log.getDatePartie()
+                ))
+                .collect(Collectors.toList());
     }
+
     public GameLog jouerPartie(Long userId, Double mise, Double gain, String resultat) {
         Utilisateurs utilisateur = utilisateurRepository.findById(userId)
             .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));

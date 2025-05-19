@@ -32,12 +32,13 @@ public class GameLogController {
     }
 
     @GetMapping("/{userId}")
-    public ResponseEntity<?> getGameLogsByUserId(@PathVariable Long userId) {
-        try {
-            return ResponseEntity.ok(gameLogService.getGameLogsByUserId(userId));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Erreur lors de la récupération des logs.");
-        }
+public ResponseEntity<?> getGameLogsByUserId(@PathVariable Long userId) {
+    try {
+        return ResponseEntity.ok(gameLogService.getGameLogsByUserId(userId));
+    } catch (Exception e) {
+        e.printStackTrace();
+        return ResponseEntity.status(500).body("Erreur lors de la récupération des logs.");
     }
+}
 
 }
