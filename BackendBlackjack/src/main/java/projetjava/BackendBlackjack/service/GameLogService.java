@@ -7,6 +7,7 @@ import projetjava.BackendBlackjack.model.Utilisateurs;
 import projetjava.BackendBlackjack.repository.GameLogRepository;
 import projetjava.BackendBlackjack.repository.UtilisateurRepository;
 import java.util.Optional;
+import java.util.List;
 
 @Service
 public class GameLogService {
@@ -17,6 +18,9 @@ public class GameLogService {
     @Autowired
     private UtilisateurRepository utilisateurRepository;
 
+    public List<GameLog> getGameLogsByUserId(Long userId) {
+        return gameLogRepository.findByUtilisateur_Id(userId);
+    }
     public GameLog jouerPartie(Long userId, Double mise, Double gain, String resultat) {
         Utilisateurs utilisateur = utilisateurRepository.findById(userId)
             .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));

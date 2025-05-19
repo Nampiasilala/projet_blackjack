@@ -21,14 +21,23 @@ public class GameLogController {
     public ResponseEntity<?> jouerPartie(@RequestBody GamePlayDTO request) {
         try {
             GameLog gameLog = gameLogService.jouerPartie(
-                request.getUserId(),
-                request.getMise(),
-                request.getGain(),
-                request.getResultat()
-            );
+                    request.getUserId(),
+                    request.getMise(),
+                    request.getGain(),
+                    request.getResultat());
             return ResponseEntity.ok(gameLog);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @GetMapping("/{userId}")
+    public ResponseEntity<?> getGameLogsByUserId(@PathVariable Long userId) {
+        try {
+            return ResponseEntity.ok(gameLogService.getGameLogsByUserId(userId));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Erreur lors de la récupération des logs.");
+        }
+    }
+
 }
