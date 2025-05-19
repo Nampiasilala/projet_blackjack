@@ -16,6 +16,7 @@ import {
   faVolumeHigh,
   faWandMagicSparkles,
   faUsers,
+  faHistory,
 } from "@fortawesome/free-solid-svg-icons";
 import Modal from "./Modal";
 import Swal from "sweetalert2";
@@ -28,17 +29,16 @@ import GameHistory from "./GameHistory";
 function Navbar() {
   const [modalType, setModalType] = useState(null);
   const navigate = useNavigate();
-  const { resetStats, stats } = useStats(); // Récupérer resetStats depuis StatsContext
-  const { currentUser, logout } = useAuth(); // Utilisation du contexte Auth pour la déconnexion
-  const { users, setUsers } = useUsers(); // Utilisation du contexte Users
+  const { resetStats, stats } = useStats();
+  const { currentUser, logout } = useAuth();
+  const { users, setUsers } = useUsers();
   const openModal = (type) => setModalType(type);
   const closeModal = () => setModalType(null);
 
-  // Fonction handleReset pour réinitialiser les stats
   const handleReset = () => {
     if (currentUser) {
-      const userId = currentUser.id; // Utiliser l'ID de l'utilisateur actuel
-      const token = currentUser.token; // Utiliser le token de l'utilisateur actuel
+      const userId = currentUser.id;
+      const token = currentUser.token;
       resetStats(userId, token);
     }
   };
@@ -46,7 +46,7 @@ function Navbar() {
   const handleDeleteUser = (id, nom) => {
     Swal.fire({
       title: "Suppression d'utilisateur",
-      text: `Souhaitez-vous vraiment supprimer ${nom} ?`, // Utilise des backticks pour une interpolation correcte
+      text: `Souhaitez-vous vraiment supprimer ${nom} ?`,
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#e74c3c",
@@ -69,11 +69,10 @@ function Navbar() {
 
           await axios.delete(`http://localhost:8080/api/utilisateurs/${id}`, {
             headers: {
-              Authorization: `Bearer ${token}`, // Utilise aussi les backticks ici
+              Authorization: `Bearer ${token}`,
             },
           });
 
-          // Mise à jour locale
           setUsers(users.filter((user) => user.id !== id));
 
           Swal.fire({
@@ -136,6 +135,19 @@ function Navbar() {
 
   const filteredUsers = users.filter((user) => user.id !== currentUser?.id);
 
+  const IconButton = ({
+    icon,
+    onClick,
+    color = "text-white",
+    hoverColor = "hover:text-blue-400",
+  }) => (
+    <FontAwesomeIcon
+      icon={icon}
+      className={`cursor-pointer ${color} ${hoverColor} transition`}
+      onClick={onClick}
+    />
+  );
+
   return (
     <>
       <div className="flex justify-between items-center p-3 bg-gradient-to-r from-slate-800 to-slate-900 backdrop-blur-md shadow-md text-white border-b border-white/20">
@@ -147,31 +159,11 @@ function Navbar() {
           Jeux Blackjack
         </h2>
         <div className="flex gap-8 text-xl cursor-pointer">
-          <FontAwesomeIcon
-            icon={faUser}
-            className="hover:text-blue-400 transition"
-            onClick={() => openModal("profile")}
-          />
-          <FontAwesomeIcon
-            icon={faUsersGear}
-            className="hover:text-blue-400 transition"
-            onClick={() => openModal("users")}
-          />
-          <FontAwesomeIcon
-            icon={faUsersGear}
-            className="hover:text-blue-400 transition"
-            onClick={() => openModal("history")}
-          />
-          <FontAwesomeIcon
-            icon={faGear}
-            className="hover:text-blue-400 transition"
-            onClick={() => openModal("settings")}
-          />
-          <FontAwesomeIcon
-            icon={faPowerOff}
-            className="hover:text-red-400 transition"
-            onClick={handleLogoutConfirm}
-          />
+          <IconButton icon={faUser} onClick={() => openModal("profile")} />
+          <IconButton icon={faUsersGear} onClick={() => openModal("users")} />
+          <IconButton icon={faHistory} onClick={() => openModal("history")} />
+          <IconButton icon={faGear} onClick={() => openModal("settings")} />
+          <IconButton icon={faPowerOff} onClick={handleLogoutConfirm} />
         </div>
       </div>
 
@@ -319,7 +311,7 @@ function Navbar() {
                           <td className="px-4 py-3">{user.email}</td>
                           <td
                             className="px-4 py-3 text-red-500 hover:text-red-700 cursor-pointer"
-                            onClick={() => handleDeleteUser(user.id)}
+                            onClick={() => handleDeleteUser(user.id, user.nom)}
                           >
                             <FontAwesomeIcon icon={faTrash} />
                           </td>
@@ -334,24 +326,11 @@ function Navbar() {
         </Modal>
       )}
 
-{modalType === "history" && (
-  <Modal title="Gérer les utilisateurs" onClose={closeModal}>
-    <div className="space-y-4">
-      <h2 className="text-lg font-semibold text-blue-500 flex items-center gap-2">
-        <FontAwesomeIcon icon={faUsers} />
-        Tous les utilisateurs
-      </h2>
-
-      <div className="border rounded-lg shadow-md overflow-hidden">
-        <div className="max-h-[500px] overflow-y-auto">
-          jjjjjjjjjjjjjj
+      {modalType === "history" && (
+        <Modal title="Historiques" onClose={closeModal}>
           <GameHistory />
-        </div>
-      </div>
-    </div>
-  </Modal>
-)}
-
+        </Modal>
+      )}
 
       {modalType === "settings" && (
         <Modal title="Paramètres" onClose={closeModal}>
