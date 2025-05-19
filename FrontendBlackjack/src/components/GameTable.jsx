@@ -11,6 +11,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import axios from "axios"; // Ajout de l'import pour axios
+import { useGameLog } from "../context/GameLogContext";
 
 function GameTable({
   playerCards,
@@ -32,6 +33,7 @@ function GameTable({
   const hasUpdatedBalanceRef = useRef(false); // New ref to track balance updates
   const userId = useRef(localStorage.getItem("userId"));
   const token = useRef(localStorage.getItem("token"));
+  const { addGameLog } = useGameLog();
 
   // Charger le solde depuis la base de données au démarrage
   useEffect(() => {
@@ -166,6 +168,14 @@ function GameTable({
           bet: currentBet,
         });
         setLocalStats(updated);
+
+        await addGameLog({
+          mise: currentBet,
+          gain: isVictory ? gain : 0,
+          resultat: isVictory ? "win" : (isPush ? "push" : "lose")
+        });
+
+
         setShowPostGameOptions(true);
       } catch (error) {
         console.error("Erreur mise à jour stats ou balance:", error);
