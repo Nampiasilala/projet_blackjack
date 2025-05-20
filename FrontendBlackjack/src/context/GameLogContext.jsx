@@ -8,7 +8,7 @@ export function GameLogProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
+  const fetchGameLogs = async () => {
     const userId = localStorage.getItem("userId");
     const token = localStorage.getItem("token");
 
@@ -17,35 +17,41 @@ export function GameLogProvider({ children }) {
       return;
     }
 
-    const fetchGameLogs = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+    try {
+      setLoading(true);
+      setError(null);
 
-        const response = await axios.get(
-          `http://localhost:8080/api/game_logs/${userId}`,
-          {
-            headers: { 
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json"
-            },
-          }
-        );
+      const response = await axios.get(
+        `http://localhost:8080/api/game_logs/${userId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-        setGameLogs(response.data);
-      } catch (err) {
-        console.error("Erreur lors du chargement des logs de jeu:", err.response?.data || err.message);
-        setError(err.response?.data?.message || "Impossible de charger l'historique des parties");
-      } finally {
-        setLoading(false);
-      }
-    };
+      setGameLogs(response.data);
+    } catch (err) {
+      console.error(
+        "Erreur lors du chargement des logs de jeu:",
+        err.response?.data || err.message
+      );
+      setError(
+        err.response?.data?.message ||
+          "Impossible de charger l'historique des parties"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchGameLogs();
   }, []);
 
   const addGameLog = async (logData) => {
-    const userId = parseInt(localStorage.getItem("userId")); // Convertir en number
+    const userId = parseInt(localStorage.getItem("userId"));
     const token = localStorage.getItem("token");
 
     if (!userId || !token) {
@@ -55,11 +61,11 @@ export function GameLogProvider({ children }) {
     try {
       const payload = {
         ...logData,
-        userId, // Maintenant un nombre
+        userId,
         datePartie: new Date().toISOString(),
       };
 
-      console.log("Envoi des données:", payload); // Log pour débogage
+      console.log("Envoi des données:", payload);
 
       const response = await axios.post(
         `http://localhost:8080/api/game_logs/play`,
@@ -72,13 +78,13 @@ export function GameLogProvider({ children }) {
         }
       );
 
-      console.log("Réponse du serveur:", response.data); // Log pour débogage
+      console.log("Réponse du serveur:", response.data);
 
       setGameLogs((prevLogs) => [response.data, ...prevLogs]);
       return response.data;
     } catch (error) {
       console.error(
-        "Erreur complète lors de l'ajout du log de jeu:", 
+        "Erreur complète lors de l'ajout du log de jeu:",
         error.response?.data || error.message
       );
       throw error.response?.data || new Error("Échec de l'enregistrement");
@@ -86,7 +92,9 @@ export function GameLogProvider({ children }) {
   };
 
   return (
-    <GameLogContext.Provider value={{ gameLogs, loading, error, addGameLog }}>
+    <GameLogContext.Provider
+      value={{ gameLogs, loading, error, addGameLog, refreshGameLogs: fetchGameLogs }}
+    >
       {children}
     </GameLogContext.Provider>
   );

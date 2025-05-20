@@ -9,7 +9,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 export default function GameHistory() {
-  const { gameLogs, loading, error } = useGameLog();
+  const {gameLogs, loading, error } = useGameLog();
 
   const getIcon = (result) => {
     switch (result) {
@@ -35,6 +35,7 @@ export default function GameHistory() {
     return new Date(dateString).toLocaleString(undefined, options);
   };
 
+  
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5 text-gray-800 dark:text-white">
       <h2 className="text-xl font-bold mb-4 border-b pb-2 border-gray-300 dark:border-gray-600">

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useEffect, useState  } from "react";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -24,16 +24,19 @@ import { useNavigate } from "react-router-dom";
 import { useStats } from "../context/StatsContext";
 import { useUsers } from "../context/UsersContext";
 import { useAuth } from "../context/AuthContext";
+import { useGameLog } from "../context/GameLogContext";
 import GameHistory from "./GameHistory";
+
 
 function Navbar() {
   const [modalType, setModalType] = useState(null);
   const navigate = useNavigate();
   const { resetStats, stats } = useStats();
   const { currentUser, logout } = useAuth();
-  const { users, setUsers } = useUsers();
+  const { users, setUsers, refreshUsers} = useUsers();
   const openModal = (type) => setModalType(type);
   const closeModal = () => setModalType(null);
+  const {refreshGameLogs } = useGameLog();
 
   const handleReset = () => {
     if (currentUser) {
@@ -41,6 +44,22 @@ function Navbar() {
       const token = currentUser.token;
       resetStats(userId, token);
     }
+  };
+
+  const handleOpenUsersModal = async () => {
+    await refreshUsers();
+    openModal("users");
+  };
+
+  const handleOpenProfileModal = async () => {
+    await refreshUsers();
+    openModal("profile");
+  };
+
+  const handleOpenHistoryModal = async () => {
+    await refreshUsers();
+    await refreshGameLogs();
+    openModal("history");
   };
 
   const handleDeleteUser = (id, nom) => {
@@ -119,7 +138,7 @@ function Navbar() {
       },
     }).then((result) => {
       if (result.isConfirmed) {
-        logout(); // Utilisation de la fonction logout du context
+        logout();
         Swal.fire({
           title: "Déconnecté",
           text: "Vous avez été déconnecté avec succès.",
@@ -159,9 +178,9 @@ function Navbar() {
           Jeux Blackjack
         </h2>
         <div className="flex gap-8 text-xl cursor-pointer">
-          <IconButton icon={faUser} onClick={() => openModal("profile")} />
-          <IconButton icon={faUsersGear} onClick={() => openModal("users")} />
-          <IconButton icon={faHistory} onClick={() => openModal("history")} />
+          <IconButton icon={faUser} onClick={handleOpenProfileModal} />
+          <IconButton icon={faUsersGear} onClick={handleOpenUsersModal} />
+          <IconButton icon={faHistory} onClick={handleOpenHistoryModal} />
           <IconButton icon={faGear} onClick={() => openModal("settings")} />
           <IconButton icon={faPowerOff} onClick={handleLogoutConfirm} />
         </div>
