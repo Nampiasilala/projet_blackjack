@@ -29,7 +29,7 @@ function calculateScore(cards) {
   let aces = 0;
 
   cards.forEach((card) => {
-    const value = card.slice(0, -1); // enlève le symbole
+    const value = card.slice(0, -1);
 
     if (["J", "Q", "K"].includes(value)) score += 10;
     else if (value === "A") {
@@ -61,7 +61,6 @@ export default function useBlackjack() {
     setPlayerCards(newPlayerCards);
     setDealerCards(newDealerCards);
     
-    // Vérification du Blackjack
     const playerScore = calculateScore(newPlayerCards);
     const dealerScore = calculateScore(newDealerCards);
     
@@ -140,13 +139,11 @@ export default function useBlackjack() {
   };
 
   const onRestart = () => {
-    // Assurez-vous que les cartes sont réinitialisées
     setPlayerCards([]);
     setDealerCards([]);
     setIsGameOver(false);
     setMessage("");
     
-    // Puis lancez une nouvelle partie
     startGame();
   };
   

@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
+import { useAuth } from "./AuthContext";
 
 const GameLogContext = createContext();
 
@@ -7,6 +8,7 @@ export function GameLogProvider({ children }) {
   const [gameLogs, setGameLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { authLoading, isAuthenticated, currentUser } = useAuth();
 
   const fetchGameLogs = async () => {
     const userId = localStorage.getItem("userId");
@@ -47,8 +49,10 @@ export function GameLogProvider({ children }) {
   };
 
   useEffect(() => {
-    fetchGameLogs();
-  }, []);
+    if (!authLoading && isAuthenticated) {
+      fetchGameLogs();
+    }
+  }, [authLoading, isAuthenticated]);
 
   const addGameLog = async (logData) => {
     const userId = parseInt(localStorage.getItem("userId"));

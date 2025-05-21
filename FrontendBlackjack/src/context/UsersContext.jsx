@@ -8,27 +8,32 @@ export function UsersProvider({ children }) {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { isAuthenticated, currentUser } = useAuth();
+  const { isAuthenticated, currentUser, authLoading } = useAuth();
 
-  const fetchUsers = useCallback(async () => {
+  const fetchUsers = useCallback(async (forceRefresh = false) => {
     if (!isAuthenticated) {
       setLoading(false);
       return;
     }
-    
+        
+    if (users.length > 0 && !forceRefresh) {
+      setLoading(false);
+      return;
+    }
+  
     try {
       setLoading(true);
       setError(null);
-      
+
       const response = await axios.get(
-        "http://localhost:8080/api/utilisateurs", 
+        "http://localhost:8080/api/utilisateurs",
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );
-      
+
       setUsers(response.data);
     } catch (err) {
       console.error("Erreur lors du chargement des utilisateurs :", err);
@@ -36,11 +41,13 @@ export function UsersProvider({ children }) {
     } finally {
       setLoading(false);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, users.length]);
 
   useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]);
+    if (!authLoading && isAuthenticated) {
+      fetchUsers();
+    }
+  }, [authLoading, isAuthenticated, fetchUsers]);
 
   const updateUserBalance = async (userId, newBalance) => {
     try {
@@ -54,31 +61,30 @@ export function UsersProvider({ children }) {
           },
         }
       );
-      
-      // Update local users state if needed
-      setUsers(prevUsers => 
-        prevUsers.map(user => 
+
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
           user.id === userId ? { ...user, balance: newBalance } : user
         )
       );
-      
+
       return response.data;
     } catch (error) {
-      console.error('Erreur lors de la mise à jour du solde:', error);
+      console.error("Erreur lors de la mise à jour du solde:", error);
       throw error;
     }
   };
 
   return (
-    <UsersContext.Provider 
-      value={{ 
-        users, 
-        setUsers, 
+    <UsersContext.Provider
+      value={{
+        users,
+        setUsers,
         currentUser,
         loading,
         error,
         refreshUsers: fetchUsers,
-        updateUserBalance
+        updateUserBalance,
       }}
     >
       {children}

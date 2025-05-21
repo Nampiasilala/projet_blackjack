@@ -1,4 +1,4 @@
-import React, { useEffect, useState  } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -17,6 +17,7 @@ import {
   faWandMagicSparkles,
   faUsers,
   faHistory,
+  faSpinner
 } from "@fortawesome/free-solid-svg-icons";
 import Modal from "./Modal";
 import Swal from "sweetalert2";
@@ -33,10 +34,24 @@ function Navbar() {
   const navigate = useNavigate();
   const { resetStats, stats } = useStats();
   const { currentUser, logout } = useAuth();
-  const { users, setUsers, refreshUsers} = useUsers();
+  const { users, setUsers, refreshUsers, loading } = useUsers();
+  const { refreshGameLogs } = useGameLog();
+  const filteredUsers = users.filter((user) => user.id !== currentUser?.id);
+  const [profileData, setProfileData] = useState(null);
+
+
   const openModal = (type) => setModalType(type);
   const closeModal = () => setModalType(null);
-  const {refreshGameLogs } = useGameLog();
+
+  useEffect(() => {
+    if (currentUser) {
+      refreshUsers();
+    }
+  }, [currentUser, refreshUsers, modalType]);
+
+  useEffect(() => {
+      refreshUsers();
+  }, []);
 
   const handleReset = () => {
     if (currentUser) {
@@ -53,13 +68,15 @@ function Navbar() {
 
   const handleOpenProfileModal = async () => {
     await refreshUsers();
+    setProfileData(currentUser);
     openModal("profile");
+    console.log("kkkkkk", currentUser);
   };
 
   const handleOpenHistoryModal = async () => {
+    openModal("history");
     await refreshUsers();
     await refreshGameLogs();
-    openModal("history");
   };
 
   const handleDeleteUser = (id, nom) => {
@@ -152,7 +169,6 @@ function Navbar() {
     });
   };
 
-  const filteredUsers = users.filter((user) => user.id !== currentUser?.id);
 
   const IconButton = ({
     icon,
@@ -165,6 +181,13 @@ function Navbar() {
       className={`cursor-pointer ${color} ${hoverColor} transition`}
       onClick={onClick}
     />
+  );
+
+  const LoadingSpinner = () => (
+    <div className="flex justify-center items-center p-4">
+      <FontAwesomeIcon icon={faSpinner} spin className="text-blue-500 text-xl" />
+      <span className="ml-2">Chargement des données...</span>
+    </div>
   );
 
   return (
@@ -188,160 +211,168 @@ function Navbar() {
 
       {modalType === "profile" && (
         <Modal title="Profil" onClose={closeModal}>
-          <div className="space-y-4">
-            <div>
-              <h2 className="text-lg font-semibold py-2 text-blue-500">
-                <FontAwesomeIcon icon={faUser} /> Informations personnelles
-              </h2>
-              <table className="w-full text-left border border-gray-300 rounded-lg shadow-sm overflow-hidden">
-                <tbody>
-                  <tr className="border-b border-gray-200">
-                    <td className="px-4 py-2 bg-gray-100 font-medium">Nom</td>
-                    <td className="px-4 py-2 bg-gray-50">
-                      {currentUser?.nom ?? "Nom non disponible"}
-                    </td>
-                    <td className="px-2 py-2 bg-gray-50 text-blue-600 hover:text-blue-800">
-                      <button>
-                        <FontAwesomeIcon icon={faUserPen} />
-                      </button>
-                    </td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="px-4 py-2 bg-gray-100 font-medium">Email</td>
-                    <td className="px-4 py-2 bg-gray-50">
-                      {currentUser?.email ?? "Email non disponible"}
-                    </td>
-                    <td className="px-2 py-2 bg-gray-50 text-blue-600 hover:text-blue-800">
-                      <button>
-                        <FontAwesomeIcon icon={faUserPen} />
-                      </button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            <div>
-              <div className="flex justify-between py-2">
-                <h2 className="text-lg font-semibold text-blue-500">
-                  <FontAwesomeIcon icon={faChartPie} /> Statistiques de jeu
+          {loading ? (
+            <LoadingSpinner />
+          ) : (
+            <div className="space-y-4">
+              <div>
+                <h2 className="text-lg font-semibold py-2 text-blue-500">
+                  <FontAwesomeIcon icon={faUser} /> Informations personnelles
                 </h2>
-                <button
-                  className="text-red-500 hover:text-red-700"
-                  onClick={handleReset}
-                >
-                  <FontAwesomeIcon icon={faRotateRight} /> restaurer
-                </button>
+                <table className="w-full text-left border border-gray-300 rounded-lg shadow-sm overflow-hidden">
+                  <tbody>
+                    <tr className="border-b border-gray-200">
+                      <td className="px-4 py-2 bg-gray-100 font-medium">Nom</td>
+                      <td className="px-4 py-2 bg-gray-50">
+                        {currentUser?.nom ?? "Nom non disponible"}
+                      </td>
+                      <td className="px-2 py-2 bg-gray-50 text-blue-600 hover:text-blue-800">
+                        <button>
+                          <FontAwesomeIcon icon={faUserPen} />
+                        </button>
+                      </td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="px-4 py-2 bg-gray-100 font-medium">Email</td>
+                      <td className="px-4 py-2 bg-gray-50">
+                        {currentUser?.email ?? "Email non disponible"}
+                      </td>
+                      <td className="px-2 py-2 bg-gray-50 text-blue-600 hover:text-blue-800">
+                        <button>
+                          <FontAwesomeIcon icon={faUserPen} />
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
 
-              <table className="w-full text-left border border-blue-200 rounded-lg shadow-sm overflow-hidden">
-                <tbody>
-                  <tr className="border-b border-blue-200 ">
-                    <td className="px-4 py-2 bg-gray-100 font-medium">
-                      Parties jouées
-                    </td>
-                    <td className="px-4 py-2 bg-white">
-                      {stats?.partiesJouees ?? "-"}
-                    </td>
-                  </tr>
-                  <tr className="border-b border-blue-200">
-                    <td className="px-4 py-2 bg-gray-100 font-medium">
-                      Parties gagnées
-                    </td>
-                    <td className="px-4 py-2 bg-white">
-                      {stats?.partiesGagnees ?? "-"}
-                    </td>
-                  </tr>
-                  <tr className="border-b border-blue-200">
-                    <td className="px-4 py-2 bg-gray-100 font-medium">
-                      Parties perdues
-                    </td>
-                    <td className="px-4 py-2 bg-white">
-                      {stats?.partiesPerdues ?? "-"}
-                    </td>
-                  </tr>
-                  <tr className="border-b border-blue-200">
-                    <td className="px-4 py-2 bg-gray-100 font-medium">
-                      Total de jetons gagnés
-                    </td>
-                    <td className="px-4 py-2 bg-white">
-                      {stats?.jetonsGagnes ?? "-"}
-                    </td>
-                  </tr>
-                  <tr className="border-b border-blue-200">
-                    <td className="px-4 py-2 bg-gray-100 font-medium">
-                      Total de jetons perdus
-                    </td>
-                    <td className="px-4 py-2 bg-white">
-                      {stats?.jetonsPerdus ?? "-"}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="px-4 py-2 bg-gray-100 font-medium">
-                      Meilleure série de victoires
-                    </td>
-                    <td className="px-4 py-2 bg-white">
-                      {stats?.meilleureSerieVictoires ?? "-"}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+              <div>
+                <div className="flex justify-between py-2">
+                  <h2 className="text-lg font-semibold text-blue-500">
+                    <FontAwesomeIcon icon={faChartPie} /> Statistiques de jeu
+                  </h2>
+                  <button
+                    className="text-red-500 hover:text-red-700"
+                    onClick={handleReset}
+                  >
+                    <FontAwesomeIcon icon={faRotateRight} /> restaurer
+                  </button>
+                </div>
+
+                <table className="w-full text-left border border-blue-200 rounded-lg shadow-sm overflow-hidden">
+                  <tbody>
+                    <tr className="border-b border-blue-200 ">
+                      <td className="px-4 py-2 bg-gray-100 font-medium">
+                        Parties jouées
+                      </td>
+                      <td className="px-4 py-2 bg-white">
+                        {stats?.partiesJouees ?? "-"}
+                      </td>
+                    </tr>
+                    <tr className="border-b border-blue-200">
+                      <td className="px-4 py-2 bg-gray-100 font-medium">
+                        Parties gagnées
+                      </td>
+                      <td className="px-4 py-2 bg-white">
+                        {stats?.partiesGagnees ?? "-"}
+                      </td>
+                    </tr>
+                    <tr className="border-b border-blue-200">
+                      <td className="px-4 py-2 bg-gray-100 font-medium">
+                        Parties perdues
+                      </td>
+                      <td className="px-4 py-2 bg-white">
+                        {stats?.partiesPerdues ?? "-"}
+                      </td>
+                    </tr>
+                    <tr className="border-b border-blue-200">
+                      <td className="px-4 py-2 bg-gray-100 font-medium">
+                        Total de jetons gagnés
+                      </td>
+                      <td className="px-4 py-2 bg-white">
+                        {stats?.jetonsGagnes ?? "-"}
+                      </td>
+                    </tr>
+                    <tr className="border-b border-blue-200">
+                      <td className="px-4 py-2 bg-gray-100 font-medium">
+                        Total de jetons perdus
+                      </td>
+                      <td className="px-4 py-2 bg-white">
+                        {stats?.jetonsPerdus ?? "-"}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="px-4 py-2 bg-gray-100 font-medium">
+                        Meilleure série de victoires
+                      </td>
+                      <td className="px-4 py-2 bg-white">
+                        {stats?.meilleureSerieVictoires ?? "-"}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
+          )}
         </Modal>
       )}
 
       {modalType === "users" && (
         <Modal title="Gérer les utilisateurs" onClose={closeModal}>
-          <div className="space-y-4">
-            <h2 className="text-lg font-semibold text-blue-500 flex items-center gap-2">
-              <FontAwesomeIcon icon={faUsers} />
-              Tous les utilisateurs
-            </h2>
+          {loading ? (
+            <LoadingSpinner />
+          ) : (
+            <div className="space-y-4">
+              <h2 className="text-lg font-semibold text-blue-500 flex items-center gap-2">
+                <FontAwesomeIcon icon={faUsers} />
+                Tous les utilisateurs
+              </h2>
 
-            <div className="border rounded-lg shadow-md overflow-hidden">
-              <div className="max-h-[500px] overflow-y-auto">
-                <table className="w-full text-sm text-left">
-                  <thead className="bg-gray-100 sticky top-0 z-10">
-                    <tr>
-                      <th className="px-4 py-3 font-semibold text-gray-700">
-                        Nom
-                      </th>
-                      <th className="px-4 py-3 font-semibold text-gray-700">
-                        Email
-                      </th>
-                      <th className="px-4 py-3 font-semibold text-gray-700"></th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white">
-                    {filteredUsers.length === 0 ? (
+              <div className="border rounded-lg shadow-md overflow-hidden">
+                <div className="max-h-[500px] overflow-y-auto">
+                  <table className="w-full text-sm text-left">
+                    <thead className="bg-gray-100 sticky top-0 z-10">
                       <tr>
-                        <td
-                          colSpan="3"
-                          className="px-4 py-4 text-center text-gray-500"
-                        >
-                          Aucun utilisateur trouvé.
-                        </td>
+                        <th className="px-4 py-3 font-semibold text-gray-700">
+                          Nom
+                        </th>
+                        <th className="px-4 py-3 font-semibold text-gray-700">
+                          Email
+                        </th>
+                        <th className="px-4 py-3 font-semibold text-gray-700"></th>
                       </tr>
-                    ) : (
-                      filteredUsers.map((user) => (
-                        <tr key={user.id} className="border-t hover:bg-gray-50">
-                          <td className="px-4 py-3">{user.nom}</td>
-                          <td className="px-4 py-3">{user.email}</td>
+                    </thead>
+                    <tbody className="bg-white">
+                      {filteredUsers.length === 0 ? (
+                        <tr>
                           <td
-                            className="px-4 py-3 text-red-500 hover:text-red-700 cursor-pointer"
-                            onClick={() => handleDeleteUser(user.id, user.nom)}
+                            colSpan="3"
+                            className="px-4 py-4 text-center text-gray-500"
                           >
-                            <FontAwesomeIcon icon={faTrash} />
+                            Aucun utilisateur trouvé.
                           </td>
                         </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
+                      ) : (
+                        filteredUsers.map((user) => (
+                          <tr key={user.id} className="border-t hover:bg-gray-50">
+                            <td className="px-4 py-3">{user.nom}</td>
+                            <td className="px-4 py-3">{user.email}</td>
+                            <td
+                              className="px-4 py-3 text-red-500 hover:text-red-700 cursor-pointer"
+                              onClick={() => handleDeleteUser(user.id, user.nom)}
+                            >
+                              <FontAwesomeIcon icon={faTrash} />
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </Modal>
       )}
 

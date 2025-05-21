@@ -1,17 +1,17 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useAuth } from "../context/AuthContext";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faCaretLeft
-} from "@fortawesome/free-solid-svg-icons";
+import { faCaretLeft } from "@fortawesome/free-solid-svg-icons";
 
 function Login() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [credentials, setCredentials] = useState({ email: "", password: "" });
-  const [loading, setLoading] = useState(false); // état du chargement
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setCredentials({
@@ -36,14 +36,14 @@ function Login() {
       );
 
       if (response.status === 200) {
-        localStorage.setItem("token", response.data.token);
-        localStorage.setItem("userId", response.data.userId);
-        localStorage.setItem("email", response.data.email);
+        const { token, userId } = response.data;
+
+        await login(token, userId); // 👈 Met à jour le contexte immédiatement
 
         toast.success("Connexion réussie !");
         setTimeout(() => {
           navigate("/MainPage");
-        }, 2000);
+        }, 1500);
       }
     } catch (err) {
       if (err.response?.status === 401) {
@@ -70,8 +70,6 @@ function Login() {
 
       <div className="relative z-10 bg-black bg-opacity-70 p-8 rounded-2xl shadow-lg w-96">
         <h2 className="text-3xl font-bold mb-6 text-center">Connexion</h2>
-
-        {/* {error && <p className="text-red-400 text-sm mb-4 text-center">{error}</p>} */}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
@@ -112,7 +110,11 @@ function Login() {
         <p className="mt-4 text-center text-sm">
           <button
             onClick={() => navigate("/")}
-            className="text-cyan-300"><FontAwesomeIcon icon={faCaretLeft} /> Retour</button> Pas de compte ?{" "}
+            className="text-cyan-300"
+          >
+            <FontAwesomeIcon icon={faCaretLeft} /> Retour
+          </button>{" "}
+          Pas de compte ?{" "}
           <button
             onClick={() => navigate("/register")}
             className="text-green-400 hover:underline"

@@ -1,21 +1,15 @@
 import React, { useState } from "react";
 
 function Controls({ onHit, onStand, isGameOver, bet, onDoubleBet }) {
-  // État pour désactiver les boutons après avoir doublé
   const [hasDoubled, setHasDoubled] = useState(false);
 
-  // Gérer l'action de doubler correctement
   const handleDouble = () => {
-    // Appeler une fonction qui double la mise
     onDoubleBet();
     
-    // Piocher une seule carte
     onHit();
     
-    // Terminer automatiquement le tour
     onStand();
     
-    // Désactiver les boutons après avoir doublé
     setHasDoubled(true);
   };
 

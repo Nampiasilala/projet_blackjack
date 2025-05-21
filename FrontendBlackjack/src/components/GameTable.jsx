@@ -10,7 +10,7 @@ import {
   faEquals,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import axios from "axios"; // Ajout de l'import pour axios
+import axios from "axios";
 import { useGameLog } from "../context/GameLogContext";
 
 function GameTable({
@@ -30,18 +30,18 @@ function GameTable({
   const [showPostGameOptions, setShowPostGameOptions] = useState(false);
   const [playerBalance, setPlayerBalance] = useState(1000);
   const hasUpdatedStatsRef = useRef(false);
-  const hasUpdatedBalanceRef = useRef(false); // New ref to track balance updates
+  const hasUpdatedBalanceRef = useRef(false);
   const userId = useRef(localStorage.getItem("userId"));
   const token = useRef(localStorage.getItem("token"));
   const { addGameLog } = useGameLog();
 
-  // Charger le solde depuis la base de données au démarrage
+ 
   useEffect(() => {
     const loadUserData = async () => {
       if (!userId.current || !token.current) return;
 
       try {
-        // Récupérer le solde de l'utilisateur depuis l'API
+        
         const response = await axios.get(
           `http://localhost:8080/api/utilisateurs/${userId.current}`,
           {
@@ -53,11 +53,9 @@ function GameTable({
         
         if (response.data && response.data.balance) {
           setPlayerBalance(response.data.balance);
-          // Mettre à jour également le localStorage
           localStorage.setItem("playerBalance", response.data.balance.toString());
         }
 
-        // Charger aussi les stats
         await fetchStats(userId.current, token.current);
       } catch (error) {
         console.error("Erreur lors du chargement des données utilisateur:", error);
@@ -65,7 +63,7 @@ function GameTable({
     };
 
     loadUserData();
-  }, []); // Empty dependency array to run only once on mount
+  }, []);
 
   useEffect(() => {
     setLocalStats(stats);
@@ -95,7 +93,6 @@ function GameTable({
     return value;
   };
 
-  // Mettre à jour le solde dans la base de données
   const updateBalanceInDB = async (userId, newBalance) => {
     try {
       const response = await axios.put(
@@ -124,7 +121,7 @@ function GameTable({
         !userId.current ||
         !token.current ||
         hasUpdatedStatsRef.current ||
-        hasUpdatedBalanceRef.current || // Check if balance has already been updated
+        hasUpdatedBalanceRef.current || 
         !currentBet
       )
         return;
@@ -139,16 +136,13 @@ function GameTable({
   
       let newBalance = playerBalance;
   
-      // Calcul correct du gain
       if (isVictory) {
         const gain = isBlackjack ? Math.floor(currentBet * 1.5) : currentBet;
-        newBalance += currentBet + gain; // La mise initiale + le gain
+        newBalance += currentBet + gain;
       } else if (isPush) {
-        newBalance += currentBet; // Remboursement de la mise
+        newBalance += currentBet;
       }
-      // En cas de défaite, la mise a déjà été déduite du solde
   
-      // Set flags before async operations to prevent race conditions
       hasUpdatedBalanceRef.current = true;
       hasUpdatedStatsRef.current = true;
       
@@ -156,7 +150,6 @@ function GameTable({
       localStorage.setItem("playerBalance", newBalance.toString());
       
       try {
-        // Mise à jour du solde dans la base de données
         await updateBalanceInDB(userId.current, newBalance);
   
         const updated = await updateStats({
@@ -179,22 +172,21 @@ function GameTable({
         setShowPostGameOptions(true);
       } catch (error) {
         console.error("Erreur mise à jour stats ou balance:", error);
-        // Reset flags on error to potentially retry
         hasUpdatedBalanceRef.current = false;
         hasUpdatedStatsRef.current = false;
       }
     };
   
     handleGameEnd();
-  }, [isGameOver, message]);  // Reduced dependencies to minimize re-renders
+  }, [isGameOver, message]);
 
   useEffect(() => {
     if (!isGameOver) {
       hasUpdatedStatsRef.current = false;
-      hasUpdatedBalanceRef.current = false; // Reset balance update flag when game is not over
+      hasUpdatedBalanceRef.current = false;
       setShowPostGameOptions(false);
     } else {
-      // Forcer l'affichage des options en fin de partie
+      
       setShowPostGameOptions(true);
     }
   }, [isGameOver]);
@@ -213,12 +205,10 @@ function GameTable({
     setPlayerBalance(newBalance);
     localStorage.setItem("playerBalance", newBalance.toString());
     
-    // Mise à jour du solde dans la base de données
     try {
       await updateBalanceInDB(userId.current, newBalance);
     } catch (error) {
       console.error("Erreur lors de la mise à jour du solde:", error);
-      // Restore balance on error
       setPlayerBalance(playerBalance);
       localStorage.setItem("playerBalance", playerBalance.toString());
       alert("Erreur lors de la mise à jour du solde. Veuillez réessayer.");
@@ -236,20 +226,17 @@ function GameTable({
     localStorage.setItem("playerBalance", newBalance.toString());
     
     try {
-      // Mise à jour du solde dans la base de données
       await updateBalanceInDB(userId.current, newBalance);
       setCurrentBet(initialBet * 2);
-      onHit(); // Tirer une carte automatiquement après avoir doublé
+      onHit();
     } catch (error) {
       console.error("Erreur lors de la mise à jour du solde:", error);
-      // Restore balance on error
       setPlayerBalance(playerBalance);
       localStorage.setItem("playerBalance", playerBalance.toString());
       alert("Erreur lors de la mise à jour du solde. Veuillez réessayer.");
     }
   };
 
-  // Gérer le bouton "Même mise"
   const handleMemeMise = async () => {
     if (initialBet === null || initialBet <= 0) {
       alert("Aucune mise précédente !");
@@ -263,25 +250,20 @@ function GameTable({
     }
 
     try {
-      // Met à jour le solde et stocke dans le localStorage
       setPlayerBalance(newBalance);
       localStorage.setItem("playerBalance", newBalance.toString());
       
-      // Mise à jour du solde dans la base de données
       await updateBalanceInDB(userId.current, newBalance);
   
-      // Réapplique la mise précédente
       setCurrentBet(initialBet);
       setHasBet(true);
       setShowPostGameOptions(false);
       hasUpdatedStatsRef.current = false;
       hasUpdatedBalanceRef.current = false;
   
-      // Redémarre la partie
       onRestart();
     } catch (error) {
       console.error("Erreur lors de la mise à jour du solde:", error);
-      // Restore balance on error
       setPlayerBalance(playerBalance);
       localStorage.setItem("playerBalance", playerBalance.toString());
       alert("Erreur lors de la mise à jour du solde. Veuillez réessayer.");
@@ -393,7 +375,6 @@ function GameTable({
           <div className="flex gap-4 mt-4">
             <button
               onClick={() => {
-                // Réinitialisation complète pour retourner à la sélection des jetons
                 setHasBet(false);
                 setInitialBet(null);
                 setCurrentBet(null);

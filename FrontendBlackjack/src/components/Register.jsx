@@ -55,7 +55,6 @@ function Register() {
         if (typeof data === "string") {
           toast.error(data);
         } else {
-          // Afficher chaque erreur comme une notification
           Object.values(data).forEach(msg => {
             toast.error(msg);
           });

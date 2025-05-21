@@ -5,7 +5,6 @@ function Modal({ title, children, onClose }) {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      // Ignorer les clics sur SweetAlert
       if (event.target.closest(".swal2-container")) return;
     
       if (modalRef.current && !modalRef.current.contains(event.target)) {

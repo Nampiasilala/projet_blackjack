@@ -1,4 +1,4 @@
-// context/AuthContext.js
+// src/contexts/AuthContext.js
 import { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -8,6 +8,7 @@ const AuthContext = createContext();
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authLoading, setAuthLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -17,31 +18,55 @@ export function AuthProvider({ children }) {
     if (token && userId) {
       axios
         .get(`http://localhost:8080/api/utilisateurs/${userId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         })
         .then((response) => {
           setCurrentUser(response.data);
           setIsAuthenticated(true);
         })
-        .catch((error) => {
-          console.error("Erreur d'authentification:", error);
+        .catch(() => {
           setIsAuthenticated(false);
+        })
+        .finally(() => {
+          setAuthLoading(false);
         });
+    } else {
+      setIsAuthenticated(false);
+      setAuthLoading(false);
     }
   }, []);
+
+  const login = async (token, userId) => {
+    localStorage.setItem("token", token);
+    localStorage.setItem("userId", userId);
+
+    try {
+      const response = await axios.get(
+        `http://localhost:8080/api/utilisateurs/${userId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setCurrentUser(response.data);
+      setIsAuthenticated(true);
+    } catch (error) {
+      console.error("Erreur de récupération de l'utilisateur :", error);
+      setIsAuthenticated(false);
+    }
+  };
 
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("userId");
     setCurrentUser(null);
     setIsAuthenticated(false);
-    navigate("/"); // Redirige vers la page d'accueil après déconnexion
+    navigate("/");
   };
 
   return (
-    <AuthContext.Provider value={{ currentUser, isAuthenticated, logout }}>
+    <AuthContext.Provider
+      value={{ currentUser, isAuthenticated, authLoading, login, logout }}
+    >
       {children}
     </AuthContext.Provider>
   );
