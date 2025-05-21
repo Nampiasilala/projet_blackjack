@@ -38,7 +38,7 @@ function Login() {
       if (response.status === 200) {
         const { token, userId } = response.data;
 
-        await login(token, userId); // 👈 Met à jour le contexte immédiatement
+        await login(token, userId);
 
         toast.success("Connexion réussie !");
         setTimeout(() => {

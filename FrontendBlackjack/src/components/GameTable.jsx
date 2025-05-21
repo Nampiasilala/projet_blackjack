@@ -133,7 +133,8 @@ function GameTable({
       const isPush = lowerMessage.includes("égalité");
       const isBlackjack =
         !isPush && playerCards.length === 2 && getHandValue(playerCards) === 21;
-  
+        
+      let gain = 0;
       let newBalance = playerBalance;
   
       if (isVictory) {

@@ -35,7 +35,7 @@ function Navbar() {
   const { resetStats, stats } = useStats();
   const { currentUser, logout } = useAuth();
   const { users, setUsers, refreshUsers, loading } = useUsers();
-  const { refreshGameLogs } = useGameLog();
+  const { fetchGameLogs } = useGameLog();
   const filteredUsers = users.filter((user) => user.id !== currentUser?.id);
   const [profileData, setProfileData] = useState(null);
 
@@ -76,7 +76,7 @@ function Navbar() {
   const handleOpenHistoryModal = async () => {
     openModal("history");
     await refreshUsers();
-    await refreshGameLogs();
+    await fetchGameLogs();
   };
 
   const handleDeleteUser = (id, nom) => {

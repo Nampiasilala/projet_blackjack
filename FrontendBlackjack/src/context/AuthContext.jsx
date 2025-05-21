@@ -1,4 +1,3 @@
-// src/contexts/AuthContext.js
 import { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -37,6 +36,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = async (token, userId) => {
+    setAuthLoading(true); // Ajouté
     localStorage.setItem("token", token);
     localStorage.setItem("userId", userId);
 
@@ -52,6 +52,8 @@ export function AuthProvider({ children }) {
     } catch (error) {
       console.error("Erreur de récupération de l'utilisateur :", error);
       setIsAuthenticated(false);
+    } finally {
+      setAuthLoading(false); // Ajouté
     }
   };
 
