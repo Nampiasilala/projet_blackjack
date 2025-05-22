@@ -8,6 +8,7 @@ import {
   faXmark,
   faGamepad,
   faEquals,
+  faCoins
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import axios from "axios";
@@ -29,43 +30,48 @@ function GameTable({
   const [hasBet, setHasBet] = useState(false);
   const [showPostGameOptions, setShowPostGameOptions] = useState(false);
   const [playerBalance, setPlayerBalance] = useState(1000);
-  
+
   const [animatedPlayerCards, setAnimatedPlayerCards] = useState([]);
   const [animatedDealerCards, setAnimatedDealerCards] = useState([]);
   const [isAnimating, setIsAnimating] = useState(false);
   const [showMessage, setShowMessage] = useState(false);
   const [cardAnimationKeys, setCardAnimationKeys] = useState({
     player: [],
-    dealer: []
+    dealer: [],
   });
-  
+
   const hasUpdatedStatsRef = useRef(false);
   const hasUpdatedBalanceRef = useRef(false);
   const userId = useRef(localStorage.getItem("userId"));
   const token = useRef(localStorage.getItem("token"));
   const { addGameLog } = useGameLog();
 
-  const animateNewCards = (newCards, currentAnimatedCards, setAnimatedCards, type) => {
+  const animateNewCards = (
+    newCards,
+    currentAnimatedCards,
+    setAnimatedCards,
+    type
+  ) => {
     if (newCards.length === 0) {
       setAnimatedCards([]);
-      setCardAnimationKeys(prev => ({ ...prev, [type]: [] }));
+      setCardAnimationKeys((prev) => ({ ...prev, [type]: [] }));
       return;
     }
 
     if (newCards.length <= currentAnimatedCards.length) {
       setAnimatedCards([]);
-      setCardAnimationKeys(prev => ({ ...prev, [type]: [] }));
+      setCardAnimationKeys((prev) => ({ ...prev, [type]: [] }));
       setShowMessage(false);
-      
+
       setTimeout(() => {
         newCards.forEach((card, index) => {
           setTimeout(() => {
-            setAnimatedCards(prev => [...prev, card]);
-            setCardAnimationKeys(prev => ({
+            setAnimatedCards((prev) => [...prev, card]);
+            setCardAnimationKeys((prev) => ({
               ...prev,
-              [type]: [...prev[type], `${type}-${Date.now()}-${index}`]
+              [type]: [...prev[type], `${type}-${Date.now()}-${index}`],
             }));
-            
+
             if (index === newCards.length - 1) {
               setTimeout(() => {
                 setIsAnimating(false);
@@ -85,15 +91,18 @@ function GameTable({
     setIsAnimating(true);
     setShowMessage(false);
     const cardsToAdd = newCards.slice(currentAnimatedCards.length);
-    
+
     cardsToAdd.forEach((card, index) => {
       setTimeout(() => {
-        setAnimatedCards(prev => [...prev, card]);
-        setCardAnimationKeys(prev => ({
+        setAnimatedCards((prev) => [...prev, card]);
+        setCardAnimationKeys((prev) => ({
           ...prev,
-          [type]: [...prev[type], `${type}-${Date.now()}-${currentAnimatedCards.length + index}`]
+          [type]: [
+            ...prev[type],
+            `${type}-${Date.now()}-${currentAnimatedCards.length + index}`,
+          ],
         }));
-        
+
         if (index === cardsToAdd.length - 1) {
           setTimeout(() => {
             setIsAnimating(false);
@@ -110,13 +119,23 @@ function GameTable({
 
   useEffect(() => {
     if (playerCards) {
-      animateNewCards(playerCards, animatedPlayerCards, setAnimatedPlayerCards, 'player');
+      animateNewCards(
+        playerCards,
+        animatedPlayerCards,
+        setAnimatedPlayerCards,
+        "player"
+      );
     }
   }, [playerCards]);
 
   useEffect(() => {
     if (dealerCards) {
-      animateNewCards(dealerCards, animatedDealerCards, setAnimatedDealerCards, 'dealer');
+      animateNewCards(
+        dealerCards,
+        animatedDealerCards,
+        setAnimatedDealerCards,
+        "dealer"
+      );
     }
   }, [dealerCards]);
 
@@ -143,15 +162,21 @@ function GameTable({
             },
           }
         );
-        
+
         if (response.data && response.data.balance) {
           setPlayerBalance(response.data.balance);
-          localStorage.setItem("playerBalance", response.data.balance.toString());
+          localStorage.setItem(
+            "playerBalance",
+            response.data.balance.toString()
+          );
         }
 
         await fetchStats(userId.current, token.current);
       } catch (error) {
-        console.error("Erreur lors du chargement des données utilisateur:", error);
+        console.error(
+          "Erreur lors du chargement des données utilisateur:",
+          error
+        );
       }
     };
 
@@ -198,10 +223,10 @@ function GameTable({
           },
         }
       );
-      console.log('Solde mis à jour avec succès:', response.data);
+      console.log("Solde mis à jour avec succès:", response.data);
       return response.data;
     } catch (error) {
-      console.error('Erreur lors de la mise à jour du solde:', error);
+      console.error("Erreur lors de la mise à jour du solde:", error);
       throw error;
     }
   };
@@ -214,11 +239,11 @@ function GameTable({
         !userId.current ||
         !token.current ||
         hasUpdatedStatsRef.current ||
-        hasUpdatedBalanceRef.current || 
+        hasUpdatedBalanceRef.current ||
         !currentBet
       )
         return;
-  
+
       const lowerMessage = message.toLowerCase();
       const isVictory =
         lowerMessage.includes("vous gagnez") ||
@@ -226,26 +251,26 @@ function GameTable({
       const isPush = lowerMessage.includes("égalité");
       const isBlackjack =
         !isPush && playerCards.length === 2 && getHandValue(playerCards) === 21;
-        
+
       let gain = 0;
       let newBalance = playerBalance;
-  
+
       if (isVictory) {
         const gain = isBlackjack ? Math.floor(currentBet * 1.5) : currentBet;
         newBalance += currentBet + gain;
       } else if (isPush) {
         newBalance += currentBet;
       }
-  
+
       hasUpdatedBalanceRef.current = true;
       hasUpdatedStatsRef.current = true;
-      
+
       setPlayerBalance(newBalance);
       localStorage.setItem("playerBalance", newBalance.toString());
-      
+
       try {
         await updateBalanceInDB(userId.current, newBalance);
-  
+
         const updated = await updateStats({
           isVictory,
           isBlackjack,
@@ -259,7 +284,7 @@ function GameTable({
         await addGameLog({
           mise: currentBet,
           gain: isVictory ? gain : 0,
-          resultat: isVictory ? "win" : (isPush ? "push" : "lose")
+          resultat: isVictory ? "win" : isPush ? "push" : "lose",
         });
 
         setShowPostGameOptions(true);
@@ -269,7 +294,7 @@ function GameTable({
         hasUpdatedStatsRef.current = false;
       }
     };
-  
+
     handleGameEnd();
   }, [isGameOver, message]);
 
@@ -297,7 +322,7 @@ function GameTable({
     const newBalance = playerBalance - amount;
     setPlayerBalance(newBalance);
     localStorage.setItem("playerBalance", newBalance.toString());
-    
+
     try {
       await updateBalanceInDB(userId.current, newBalance);
     } catch (error) {
@@ -317,7 +342,7 @@ function GameTable({
     const newBalance = playerBalance - initialBet;
     setPlayerBalance(newBalance);
     localStorage.setItem("playerBalance", newBalance.toString());
-    
+
     try {
       await updateBalanceInDB(userId.current, newBalance);
       setCurrentBet(initialBet * 2);
@@ -345,21 +370,21 @@ function GameTable({
     try {
       setPlayerBalance(newBalance);
       localStorage.setItem("playerBalance", newBalance.toString());
-      
+
       await updateBalanceInDB(userId.current, newBalance);
-  
+
       setCurrentBet(initialBet);
       setHasBet(true);
       setShowPostGameOptions(false);
       hasUpdatedStatsRef.current = false;
       hasUpdatedBalanceRef.current = false;
-      
+
       setAnimatedPlayerCards([]);
       setAnimatedDealerCards([]);
       setIsAnimating(false);
       setShowMessage(false);
       setCardAnimationKeys({ player: [], dealer: [] });
-  
+
       onRestart();
     } catch (error) {
       console.error("Erreur lors de la mise à jour du solde:", error);
@@ -400,7 +425,10 @@ function GameTable({
       </div>
 
       <div className="absolute top-4 left-6 z-20 bg-black/50 text-white p-4 rounded-xl border border-white/20 shadow-lg backdrop-blur-md text-sm font-mono space-y-1">
-        <p>Solde actuel: {playerBalance}$</p>
+        <p>
+          <FontAwesomeIcon icon={faCoins} className="text-yellow-500 mr-2" />
+          Solde actuel: {playerBalance}$
+        </p>
         <p>
           <FontAwesomeIcon icon={faTrophy} className="text-green-500 mr-2" />
           Jetons gagnés: {stats?.jetonsGagnes ?? 0}
@@ -451,18 +479,20 @@ function GameTable({
 
         {hasBet && (
           <>
-            <DealerHand 
-              cards={animatedDealerCards} 
+            <DealerHand
+              cards={animatedDealerCards}
               isGameOver={isGameOver}
               cardKeys={cardAnimationKeys.dealer}
             />
             <div className="w-full h-0.5 my-4 bg-white/30 rounded-full" />
-            <PlayerHand 
+            <PlayerHand
               cards={animatedPlayerCards}
               cardKeys={cardAnimationKeys.player}
             />
 
-            <p className="text-lg mt-6 font-medium">{showMessage ? message : ""}</p>
+            <p className="text-lg mt-6 font-medium">
+              {showMessage ? message : ""}
+            </p>
             <div className="mt-2 mb-4 text-lg font-semibold text-yellow-300">
               Mise actuelle : {currentBet}$
             </div>
