@@ -29,19 +29,112 @@ function GameTable({
   const [hasBet, setHasBet] = useState(false);
   const [showPostGameOptions, setShowPostGameOptions] = useState(false);
   const [playerBalance, setPlayerBalance] = useState(1000);
+  
+  const [animatedPlayerCards, setAnimatedPlayerCards] = useState([]);
+  const [animatedDealerCards, setAnimatedDealerCards] = useState([]);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [showMessage, setShowMessage] = useState(false);
+  const [cardAnimationKeys, setCardAnimationKeys] = useState({
+    player: [],
+    dealer: []
+  });
+  
   const hasUpdatedStatsRef = useRef(false);
   const hasUpdatedBalanceRef = useRef(false);
   const userId = useRef(localStorage.getItem("userId"));
   const token = useRef(localStorage.getItem("token"));
   const { addGameLog } = useGameLog();
 
- 
+  const animateNewCards = (newCards, currentAnimatedCards, setAnimatedCards, type) => {
+    if (newCards.length === 0) {
+      setAnimatedCards([]);
+      setCardAnimationKeys(prev => ({ ...prev, [type]: [] }));
+      return;
+    }
+
+    if (newCards.length <= currentAnimatedCards.length) {
+      setAnimatedCards([]);
+      setCardAnimationKeys(prev => ({ ...prev, [type]: [] }));
+      setShowMessage(false);
+      
+      setTimeout(() => {
+        newCards.forEach((card, index) => {
+          setTimeout(() => {
+            setAnimatedCards(prev => [...prev, card]);
+            setCardAnimationKeys(prev => ({
+              ...prev,
+              [type]: [...prev[type], `${type}-${Date.now()}-${index}`]
+            }));
+            
+            if (index === newCards.length - 1) {
+              setTimeout(() => {
+                setIsAnimating(false);
+                if (isGameOver) {
+                  setTimeout(() => setShowMessage(true), 800);
+                } else {
+                  setShowMessage(true);
+                }
+              }, 600);
+            }
+          }, index * 1000);
+        });
+      }, 1000);
+      return;
+    }
+
+    setIsAnimating(true);
+    setShowMessage(false);
+    const cardsToAdd = newCards.slice(currentAnimatedCards.length);
+    
+    cardsToAdd.forEach((card, index) => {
+      setTimeout(() => {
+        setAnimatedCards(prev => [...prev, card]);
+        setCardAnimationKeys(prev => ({
+          ...prev,
+          [type]: [...prev[type], `${type}-${Date.now()}-${currentAnimatedCards.length + index}`]
+        }));
+        
+        if (index === cardsToAdd.length - 1) {
+          setTimeout(() => {
+            setIsAnimating(false);
+            if (isGameOver) {
+              setTimeout(() => setShowMessage(true), 800);
+            } else {
+              setShowMessage(true);
+            }
+          }, 600);
+        }
+      }, index * 500);
+    });
+  };
+
+  useEffect(() => {
+    if (playerCards) {
+      animateNewCards(playerCards, animatedPlayerCards, setAnimatedPlayerCards, 'player');
+    }
+  }, [playerCards]);
+
+  useEffect(() => {
+    if (dealerCards) {
+      animateNewCards(dealerCards, animatedDealerCards, setAnimatedDealerCards, 'dealer');
+    }
+  }, [dealerCards]);
+
+  useEffect(() => {
+    if (!hasBet) {
+      setAnimatedPlayerCards([]);
+      setAnimatedDealerCards([]);
+      setIsAnimating(false);
+      setShowMessage(false);
+      setCardAnimationKeys({ player: [], dealer: [] });
+    }
+  }, [hasBet]);
+
   useEffect(() => {
     const loadUserData = async () => {
       if (!userId.current || !token.current) return;
 
       try {
-        
         const response = await axios.get(
           `http://localhost:8080/api/utilisateurs/${userId.current}`,
           {
@@ -169,7 +262,6 @@ function GameTable({
           resultat: isVictory ? "win" : (isPush ? "push" : "lose")
         });
 
-
         setShowPostGameOptions(true);
       } catch (error) {
         console.error("Erreur mise à jour stats ou balance:", error);
@@ -186,8 +278,8 @@ function GameTable({
       hasUpdatedStatsRef.current = false;
       hasUpdatedBalanceRef.current = false;
       setShowPostGameOptions(false);
+      setShowMessage(true);
     } else {
-      
       setShowPostGameOptions(true);
     }
   }, [isGameOver]);
@@ -261,6 +353,12 @@ function GameTable({
       setShowPostGameOptions(false);
       hasUpdatedStatsRef.current = false;
       hasUpdatedBalanceRef.current = false;
+      
+      setAnimatedPlayerCards([]);
+      setAnimatedDealerCards([]);
+      setIsAnimating(false);
+      setShowMessage(false);
+      setCardAnimationKeys({ player: [], dealer: [] });
   
       onRestart();
     } catch (error) {
@@ -353,11 +451,18 @@ function GameTable({
 
         {hasBet && (
           <>
-            <DealerHand cards={dealerCards} isGameOver={isGameOver} />
+            <DealerHand 
+              cards={animatedDealerCards} 
+              isGameOver={isGameOver}
+              cardKeys={cardAnimationKeys.dealer}
+            />
             <div className="w-full h-0.5 my-4 bg-white/30 rounded-full" />
-            <PlayerHand cards={playerCards} />
+            <PlayerHand 
+              cards={animatedPlayerCards}
+              cardKeys={cardAnimationKeys.player}
+            />
 
-            <p className="text-lg mt-6 font-medium">{message}</p>
+            <p className="text-lg mt-6 font-medium">{showMessage ? message : ""}</p>
             <div className="mt-2 mb-4 text-lg font-semibold text-yellow-300">
               Mise actuelle : {currentBet}$
             </div>
@@ -368,11 +473,12 @@ function GameTable({
               bet={initialBet}
               onDoubleBet={handleDoubleBet}
               playerBalance={playerBalance}
+              isAnimating={isAnimating}
             />
           </>
         )}
 
-        {isGameOver && (
+        {isGameOver && showMessage && (
           <div className="flex gap-4 mt-4">
             <button
               onClick={() => {
@@ -381,6 +487,11 @@ function GameTable({
                 setCurrentBet(null);
                 setShowPostGameOptions(false);
                 hasUpdatedStatsRef.current = false;
+                setAnimatedPlayerCards([]);
+                setAnimatedDealerCards([]);
+                setIsAnimating(false);
+                setShowMessage(false);
+                setCardAnimationKeys({ player: [], dealer: [] });
                 onRestart();
               }}
               className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg shadow"

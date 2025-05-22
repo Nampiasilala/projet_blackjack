@@ -1,17 +1,16 @@
 import React, { useState } from "react";
 
-function Controls({ onHit, onStand, isGameOver, bet, onDoubleBet }) {
+function Controls({ onHit, onStand, isGameOver, bet, onDoubleBet, isAnimating = false }) {
   const [hasDoubled, setHasDoubled] = useState(false);
 
   const handleDouble = () => {
     onDoubleBet();
-    
     onHit();
-    
     onStand();
-    
     setHasDoubled(true);
   };
+
+  const isDisabled = hasDoubled || isAnimating;
 
   return (
     <div>
@@ -19,33 +18,44 @@ function Controls({ onHit, onStand, isGameOver, bet, onDoubleBet }) {
         <div className="flex justify-center gap-4 mt-6">
           <button
             onClick={onHit}
-            disabled={hasDoubled}
-            className={`px-4 py-2 bg-blue-600 text-white rounded-xl shadow ${
-              hasDoubled ? "opacity-50 cursor-not-allowed" : "hover:bg-blue-700"
+            disabled={isDisabled}
+            className={`px-4 py-2 rounded-xl shadow transform transition-all duration-200 ${
+              isDisabled 
+                ? "bg-gray-500 opacity-50 cursor-not-allowed" 
+                : "bg-blue-600 text-white hover:bg-blue-700 hover:scale-105 active:scale-95"
             }`}
           >
-            Piocher
+            {isAnimating ? "Distribution..." : "Piocher"}
           </button>
+          
           <button
             onClick={onStand}
-            disabled={hasDoubled}
-            className={`px-4 py-2 bg-yellow-500 text-white rounded-xl shadow ${
-              hasDoubled ? "opacity-50 cursor-not-allowed" : "hover:bg-yellow-600"
+            disabled={isDisabled}
+            className={`px-4 py-2 rounded-xl shadow transform transition-all duration-200 ${
+              isDisabled 
+                ? "bg-gray-500 opacity-50 cursor-not-allowed" 
+                : "bg-yellow-500 text-white hover:bg-yellow-600 hover:scale-105 active:scale-95"
             }`}
           >
-            Rester
+            {isAnimating ? "Attendez..." : "Rester"}
           </button>
+          
           <button
             onClick={handleDouble}
-            disabled={hasDoubled}
-            className={`px-4 py-2 bg-red-600 text-white rounded-xl shadow ${
-              hasDoubled ? "opacity-50 cursor-not-allowed" : "hover:bg-red-700"
+            disabled={isDisabled}
+            className={`px-4 py-2 rounded-xl shadow transform transition-all duration-200 ${
+              isDisabled 
+                ? "bg-gray-500 opacity-50 cursor-not-allowed" 
+                : "bg-red-600 text-white hover:bg-red-700 hover:scale-105 active:scale-95"
             }`}
           >
-            Doubler
+            {isAnimating ? "Attendez..." : "Doubler"}
           </button>
         </div>
       )}
+      
+    
+      {isGameOver && hasDoubled && setHasDoubled(false)}
     </div>
   );
 }
