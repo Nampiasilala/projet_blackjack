@@ -330,7 +330,7 @@ function Navbar() {
               </h2>
 
               <div className="border rounded-lg shadow-md overflow-hidden">
-                <div className="max-h-[500px] overflow-y-auto">
+                <div className="max-h-[400px] overflow-y-auto">
                   <table className="w-full text-sm text-left">
                     <thead className="bg-gray-100 sticky top-0 z-10">
                       <tr>

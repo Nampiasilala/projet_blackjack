@@ -67,9 +67,24 @@ public class StatistiquesJeuController {
 
     @GetMapping("/{id}")
     public ResponseEntity<StatistiquesJeu> getStatsByUserId(@PathVariable Long id) {
+        Utilisateurs user = utilisateurRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilisateur non trouvé"));
+
         StatistiquesJeu stats = statistiquesJeuService.getStatistiquesParUtilisateurId(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "Statistiques non trouvées pour l'utilisateur : " + id));
+                .orElseGet(() -> {
+                    StatistiquesJeu newStats = new StatistiquesJeu();
+                    newStats.setUtilisateur(user);
+                    newStats.setPartiesJouees(0);
+                    newStats.setPartiesGagnees(0);
+                    newStats.setPartiesPerdues(0);
+                    newStats.setPartiesEgalites(0);
+                    newStats.setJetonsGagnes(0);
+                    newStats.setJetonsPerdus(0);
+                    newStats.setMeilleureSerieVictoires(0);
+                    return statistiquesJeuService.creerStatistiques(newStats);
+                });
+
         return ResponseEntity.ok(stats);
     }
+
 }
