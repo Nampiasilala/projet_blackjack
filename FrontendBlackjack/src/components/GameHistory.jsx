@@ -72,7 +72,7 @@ export default function GameHistory() {
               <div className="text-right text-sm space-y-1">
                 <p className="flex items-center gap-1 text-gray-700 dark:text-gray-300">
                   <FontAwesomeIcon icon={faCoins} className="text-yellow-500" />
-                  <span className="font-medium">Balance:</span> {log.balanceApres}
+                  <span className="font-medium">Mise:</span> {log.mise}
                 </p>
                 <p className="flex items-center gap-1 text-gray-500 dark:text-gray-400 text-xs">
                   <FontAwesomeIcon icon={faCalendarAlt} className="text-blue-400" />
